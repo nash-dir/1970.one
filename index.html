@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1970.one - The Origin of Time</title>
+    <style>
+        /* === GLOBAL VARIABLES & THEMES === */
+        :root {
+            --bg-color: #000;
+            --panel-bg: rgba(0, 20, 0, 0.3);
+            --dim-color: #333;
+        }
+
+        /* 1. Theme: Wikipedia (Matrix/Terminal Green) */
+        body.theme-wiki {
+            --text-color: #0f0;
+            --accent-color: #0f0;
+            --dim-color: #005500;
+            --panel-bg: rgba(0, 20, 0, 0.3);
+            --highlight: #cfc;
+            
+            --syn-key: #0a0;       
+            --syn-str: #cfc;       
+            --syn-num: #fff;       
+            --syn-bool: #8f8;      
+            --syn-special: #0f0;
+        }
+
+        /* 2. Theme: Bitcoin (Satoshi Orange & Warm Darks) */
+        body.theme-btc {
+            --text-color: #f7931a;
+            --accent-color: #f7931a;
+            --dim-color: #5d3a00;
+            --panel-bg: rgba(40, 20, 0, 0.3);
+            --highlight: #ffe4b5;
+
+            --syn-key: #c57816;    
+            --syn-str: #ffe4b5;    
+            --syn-num: #ff6b6b;    
+            --syn-bool: #ff9f43;   
+            --syn-special: #fff;   
+        }
+
+        /* 3. Theme: Github (Dimmed Dark Blue & Candy) */
+        body.theme-github {
+            --bg-color: #0d1117;
+            --text-color: #58a6ff; 
+            --accent-color: #58a6ff;
+            --dim-color: #30363d;
+            --panel-bg: rgba(22, 27, 34, 0.8);
+            --highlight: #a5d6ff;
+
+            --syn-key: #7ee787;    
+            --syn-str: #a5d6ff;    
+            --syn-num: #79c0ff;    
+            --syn-bool: #ff7b72;   
+            --syn-special: #d29922;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            transition: background-color 0.5s, color 0.5s;
+        }
+
+        a { color: var(--text-color); text-decoration: none; border-bottom: 1px dotted var(--text-color); transition: opacity 0.2s;}
+        a:hover { opacity: 0.8; background: rgba(255, 255, 255, 0.1); }
+        
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: var(--dim-color); }
+
+        /* --- 좌측 패널 --- */
+        .panel-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid var(--dim-color);
+            min-width: 400px;
+            padding: 40px;
+            transition: border-color 0.5s;
+        }
+
+        /* [수정] Grid를 Flex Column으로 변경하여 수직 스택 구현 */
+        .clock-grid {
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 수직 중앙 정렬로 공간 채움 */
+            height: 100%;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+
+        /* [수정] 라벨 스타일: 좌측 정렬, 위쪽 간격 추가 */
+        .grid-label {
+            font-size: 0.9rem; 
+            opacity: 0.6; 
+            text-align: left; 
+            padding-right: 0;
+            border-right: none; 
+            height: auto; 
+            display: block;
+            margin-top: 3rem; /* 그룹 간 간격 */
+            margin-bottom: 0.5rem; /* 값과의 간격 좁힘 */
+            letter-spacing: 1px;
+            transition: border-color 0.5s;
+        }
+        
+        /* 첫 번째 라벨은 상단 여백 제거 */
+        .grid-label:first-child { margin-top: 0; }
+
+        .label-ext {
+            font-size: 0.7em;
+            margin-left: 8px;
+            color: var(--accent-color);
+            opacity: 0.8;
+            font-weight: bold;
+        }
+
+        /* [수정] 값 스타일: 좌측 패딩 제거 */
+        .grid-value {
+            font-size: clamp(2.5rem, 6vw, 4.5rem); /* 폰트 사이즈 살짝 키움 */
+            font-weight: bold; 
+            padding-left: 0; /* 패딩 제거 */
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+            white-space: nowrap;
+            line-height: 1; /* 줄 간격 타이트하게 */
+        }
+        #unix { font-size: clamp(2rem, 5vw, 4rem); }
+
+        .left-footer { 
+            text-align: center; opacity: 0.8; padding-top: 20px; 
+            border-top: 1px solid var(--dim-color); 
+            display: flex; flex-direction: column; gap: 5px; 
+            transition: border-color 0.5s;
+        }
+        
+        .footer-text { font-size: 0.65rem; opacity: 0.5; letter-spacing: 1px;}
+        #y2k38-countdown { color: var(--text-color); font-weight: bold; opacity: 0.8;} 
+
+        /* --- 우측 패널 --- */
+        .panel-right-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            min-width: 0; 
+        }
+
+        .panel-header {
+            border-bottom: 1px solid var(--dim-color);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end; 
+            opacity: 0.8;
+            color: var(--accent-color);
+            transition: border-color 0.5s;
+            min-height: 1.5em; 
+        }
+
+        .header-title {
+            white-space: normal;       
+            word-break: break-word;    
+            line-height: 1.2;          
+            margin-right: 10px;        
+            max-width: 80%;            
+        }
+        
+        .live-indicator { color: #f00; animation: blink 1s infinite; white-space: nowrap; margin-bottom: 1px;}
+        .live-indicator.sim { color: #fa0; animation: none;} 
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .panel-top-right {
+            flex: 1;
+            padding: 20px;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--dim-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.5s, border-color 0.5s;
+            min-width: 0; 
+        }
+        #list-container { flex: 1; overflow-y: auto; font-size: 0.8rem; }
+        
+        .log-item {
+            margin-bottom: 6px;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            animation: slideIn 0.2s ease-out;
+            border-left: 2px solid transparent;
+            padding-left: 5px;
+            max-width: 100%; 
+            display: block;  
+        }
+        .log-item:first-child { border-left-color: var(--accent-color); font-weight: bold;}
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        
+        .log-time { opacity: 0.5; margin-right: 10px; font-size: 0.7em;}
+        .log-highlight { color: var(--highlight); font-weight: bold;}
+        .log-sim { color: #fa0; font-size: 0.7em; border: 1px solid #fa0; padding: 0 2px; margin-right: 5px;}
+
+        /* --- 하단 CLI 영역 --- */
+        .panel-bottom-right {
+            flex: 1;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative; 
+            min-width: 0; 
+        }
+        
+        #detail-container {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.75rem;
+            overflow-y: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 100%;
+        }
+
+        .cli-line {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 0;
+            min-height: 1.2em;
+        }
+
+        /* Syntax Highlighting */
+        .json-key { color: var(--syn-key); }
+        .json-string { color: var(--syn-str); }
+        .json-number { color: var(--syn-num); }
+        .json-bool { color: var(--syn-bool); font-weight: bold; }
+        .json-special { color: var(--syn-special); font-weight: bold; } 
+
+        /* Navigation Buttons */
+        .theme-nav {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 20px;
+            font-size: 0.75rem;
+            padding-right: 5px;
+        }
+        .nav-btn {
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-color);
+            opacity: 0.4; 
+            font-weight: normal;
+        }
+        .nav-btn:hover { opacity: 0.7; }
+        .nav-btn.active {
+            opacity: 1; 
+            font-weight: bold; 
+            text-shadow: 0 0 5px var(--accent-color); 
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; overflow: auto; height: auto;}
+            .panel-left { height: 60vh; border-right: none; border-bottom: 1px solid var(--dim-color); padding: 20px;}
+            /* 모바일에서는 폰트 사이즈 조절 */
+            .grid-value { font-size: 2.5rem !important; }
+            .panel-right-container { height: auto; }
+            .panel-top-right, .panel-bottom-right { height: 40vh; flex: none; }
+            .grid-label { margin-top: 2rem; }
+        }
+    </style>
+</head>
+<body class="theme-wiki"> 
+
+    <div class="panel-left">
+        <div></div>
+        <div class="clock-grid">
+            <div class="grid-label">
+                CURRENT TIME 
+                <span id="local-offset" class="label-ext"></span>
+            </div>
+            <div class="grid-value" id="local">--:--:--</div>
+            
+            <div class="grid-label">
+                UTC TIME 
+                <span id="utc-diff" class="label-ext"></span>
+            </div>
+            <div class="grid-value" id="utc">--:--:--</div>
+            
+            <div class="grid-label">UNIX TIMESTAMP</div>
+            <div class="grid-value" id="unix">Loading...</div>
+        </div>
+        <div class="left-footer">
+            <div id="y2k38-countdown" class="footer-text">Calculating...</div>
+            <div class="footer-text">Inquiries: <a href="mailto:nashdir.dev@gmail.com">nashdir.dev@gmail.com</a></div>
+        </div>
+    </div>
+
+    <div class="panel-right-container">
+        <div class="panel-top-right">
+            <div class="panel-header">
+                <span id="stream-title" class="header-title">> GLOBAL EVENTS (WIKI)</span>
+                <span id="status-indicator" class="live-indicator">● LIVE</span>
+            </div>
+            <div id="list-container">
+                <div class="log-item" style="opacity: 0.5;">System initialized. Waiting for stream selection...</div>
+            </div>
+        </div>
+        <div class="panel-bottom-right">
+             <div class="panel-header">
+                <span class="header-title">> INCOMING PACKET PAYLOAD</span>
+            </div>
+            <div id="detail-container"></div>
+            
+            <div class="theme-nav">
+                <span class="nav-btn active" onclick="switchTheme('wiki')">[ Wikipedia ]</span>
+                <span class="nav-btn" onclick="switchTheme('btc')">[ BTC ]</span>
+                <span class="nav-btn" onclick="switchTheme('github')">[ Github ]</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === 1. CLOCK LOGIC (Common) ===
+        function updateTime() {
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            
+            // A. Update Local & UTC Clock
+            document.getElementById('local').innerText = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+            document.getElementById('utc').innerText = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
+            document.getElementById('unix').innerText = Math.floor(now.getTime() / 1000);
+
+            // B. Calculate Offset (e.g., UTC+0900)
+            const offsetMinutes = -now.getTimezoneOffset(); // KST(-540) -> 540
+            const sign = offsetMinutes >= 0 ? '+' : '-';
+            const offH = pad(Math.floor(Math.abs(offsetMinutes) / 60));
+            const offM = pad(Math.abs(offsetMinutes) % 60);
+            document.getElementById('local-offset').innerText = `UTC${sign}${offH}${offM}`;
+
+            // C. Calculate Date Diff (e.g., (+D))
+            const localDate = now.getDate();
+            const utcDate = now.getUTCDate();
+            let diffTag = "";
+
+            if (localDate !== utcDate) {
+                const jsOffset = now.getTimezoneOffset();
+                if (jsOffset > 0) diffTag = "(+D)";
+                else diffTag = "(-D)";
+            }
+            document.getElementById('utc-diff').innerText = diffTag;
+
+
+            // D. Y2K38 Countdown
+            const target = new Date(Date.UTC(2038, 0, 19, 3, 14, 7));
+            let diff = target - now;
+            
+            let seconds = Math.floor(diff / 1000);
+            let minutes = Math.floor(seconds / 60);
+            let hours = Math.floor(minutes / 60);
+            let days = Math.floor(hours / 24);
+            let years = Math.floor(days / 365);
+            
+            days %= 365; hours %= 24; minutes %= 60; seconds %= 60;
+
+            document.getElementById('y2k38-countdown').innerText = 
+                `${years}y ${pad(days)}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s until Y2K38`;
+        }
+        setInterval(updateTime, 1000); updateTime();
+
+        // === 2. STREAM MANAGER ===
+        const listContainer = document.getElementById('list-container');
+        const detailContainer = document.getElementById('detail-container');
+        const statusIndicator = document.getElementById('status-indicator');
+        const streamTitle = document.getElementById('stream-title');
+        
+        let currentTheme = 'wiki';
+        let eventQueue = [];
+        let maxLogs = 20;
+
+        let wikiSource = null;
+        let btcSocket = null;
+        let githubInterval = null;
+        let simInterval = null;
+        
+        let seenGithubIds = new Set();
+
+        // --- THEME SWITCHER ---
+        function switchTheme(theme) {
+            if(currentTheme === theme && eventQueue.length > 0) return; 
+
+            stopAllStreams();
+            eventQueue = []; 
+            detailContainer.innerHTML = ''; 
+            listContainer.innerHTML = '';
+            
+            document.body.className = `theme-${theme}`;
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if(btn.innerText.toLowerCase().includes(theme)) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            currentTheme = theme;
+            
+            if (theme === 'wiki') {
+                streamTitle.innerText = "> GLOBAL EVENTS (WIKIPEDIA)";
+                startWikiStream();
+            } else if (theme === 'btc') {
+                streamTitle.innerText = "> MEMPOOL TRANSACTIONS (BTC)";
+                startBtcStream();
+            } else if (theme === 'github') {
+                streamTitle.innerText = "> REPOSITORY EVENTS (GITHUB)";
+                startGithubStream();
+            }
+        }
+
+        function stopAllStreams() {
+            if(wikiSource) { wikiSource.close(); wikiSource = null; }
+            if(btcSocket) { btcSocket.close(); btcSocket = null; }
+            if(githubInterval) { clearInterval(githubInterval); githubInterval = null; }
+            if(simInterval) { clearInterval(simInterval); simInterval = null; }
+            statusIndicator.innerText = "● SWITCHING...";
+            statusIndicator.classList.remove('sim');
+        }
+
+        // === 3. DATA SOURCES ===
+
+        // --- A. WIKIPEDIA (SSE) ---
+        function startWikiStream() {
+            if (!navigator.onLine) { startSimulation('wiki'); return; }
+            
+            wikiSource = new EventSource('https://stream.wikimedia.org/v2/stream/recentchange');
+            
+            wikiSource.onopen = () => setLiveStatus();
+            wikiSource.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                if (data.type === 'edit' || data.type === 'new') {
+                    eventQueue.push({
+                        theme: 'wiki',
+                        title: data.title,
+                        user: data.user,
+                        url: data.server_url + '/wiki/' + encodeURIComponent(data.title),
+                        time: data.timestamp,
+                        raw: data 
+                    });
+                    if (eventQueue.length > 50) eventQueue.shift();
+                }
+            };
+            wikiSource.onerror = () => { wikiSource.close(); startSimulation('wiki'); };
+        }
+
+        // --- B. BITCOIN (WebSocket) ---
+        function startBtcStream() {
+            if (!navigator.onLine) { startSimulation('btc'); return; }
+
+            btcSocket = new WebSocket("wss://ws.blockchain.info/inv");
+            
+            btcSocket.onopen = () => {
+                setLiveStatus();
+                btcSocket.send(JSON.stringify({ "op": "unconfirmed_sub" }));
+            };
+            btcSocket.onmessage = (msg) => {
+                const response = JSON.parse(msg.data);
+                if (response.op === "utx") {
+                    const tx = response.x;
+                    let totalSats = 0;
+                    if (tx.out) tx.out.forEach(o => totalSats += o.value);
+                    const btcVal = (totalSats / 100000000).toFixed(8);
+
+                    eventQueue.push({
+                        theme: 'btc',
+                        hash: tx.hash,
+                        btc: btcVal,
+                        url: `https://www.blockchain.com/btc/tx/${tx.hash}`,
+                        time: tx.time,
+                        raw: tx
+                    });
+                    if (eventQueue.length > 50) eventQueue.shift();
+                }
+            };
+            btcSocket.onerror = () => { btcSocket.close(); startSimulation('btc'); };
+            btcSocket.onclose = () => { if(currentTheme==='btc') startSimulation('btc'); };
+        }
+
+        // --- C. GITHUB (Polling) ---
+        async function fetchGithub() {
+            if (currentTheme !== 'github') return;
+            try {
+                const res = await fetch('https://api.github.com/events?per_page=30', {cache: 'no-store'});
+                if (res.status === 403 || res.status === 429) { startSimulation('github', true); return; }
+                const events = await res.json();
+                
+                events.reverse().forEach(evt => {
+                    if (!seenGithubIds.has(evt.id)) {
+                        seenGithubIds.add(evt.id);
+                        eventQueue.push({
+                            theme: 'github',
+                            repo: evt.repo.name,
+                            type: evt.type,
+                            user: evt.actor.login,
+                            url: `https://github.com/${evt.repo.name}`,
+                            time: new Date(evt.created_at).getTime()/1000,
+                            raw: evt
+                        });
+                    }
+                });
+                if(seenGithubIds.size > 500) seenGithubIds = new Set(Array.from(seenGithubIds).slice(-200));
+                
+                setLiveStatus();
+            } catch (e) { startSimulation('github'); }
+        }
+
+        function startGithubStream() {
+            if (!navigator.onLine) { startSimulation('github'); return; }
+            fetchGithub(); 
+            githubInterval = setInterval(fetchGithub, 6000); 
+        }
+
+        // --- D. SIMULATION (Offline/Fallback) ---
+        function startSimulation(theme, isLimit = false) {
+            if (simInterval) return; 
+            
+            statusIndicator.innerText = isLimit ? "CONNECTING (LIMIT)" : "CONNECTING";
+            statusIndicator.classList.add('sim');
+            
+            simInterval = setInterval(() => {
+                const now = Math.floor(Date.now() / 1000);
+                let fakeItem = {};
+
+                if (theme === 'wiki') {
+                    fakeItem = {
+                        theme: 'wiki', is_sim: true,
+                        title: "LOREM_IPSUM_" + Math.floor(Math.random()*1000),
+                        user: "Sim_User",
+                        time: now,
+                        raw: { title: "LOREM_IPSUM", comment: "Offline Simulation data" }
+                    };
+                } else if (theme === 'btc') {
+                    fakeItem = {
+                        theme: 'btc', is_sim: true,
+                        hash: Array(64).fill(0).map(()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join(''),
+                        btc: (Math.random()*5).toFixed(8),
+                        time: now,
+                        raw: { hash: "simulated_hash", inputs: [], out: [] }
+                    };
+                } else if (theme === 'github') {
+                    fakeItem = {
+                        theme: 'github', is_sim: true,
+                        repo: "simulation/offline-repo",
+                        type: "PushEvent",
+                        user: "Sim_Coder",
+                        time: now,
+                        raw: { type: "PushEvent", repo: {name: "offline"}, payload: {} }
+                    };
+                }
+
+                eventQueue.push(fakeItem);
+                if (eventQueue.length > 50) eventQueue.shift();
+            }, 2000);
+        }
+
+        function setLiveStatus() {
+            if(simInterval) { clearInterval(simInterval); simInterval = null; }
+            statusIndicator.innerText = "● LIVE";
+            statusIndicator.classList.remove('sim');
+        }
+
+
+        // === 4. RENDER & DISPLAY LOGIC ===
+
+        // Helper: 텍스트 길이 제한
+        function truncate(str, len) {
+            if (!str) return '';
+            return str.length > len ? str.substring(0, len) + "..." : str;
+        }
+
+        // Top List Renderer (Unified)
+        function renderTopList(item) {
+            const div = document.createElement('div');
+            div.className = 'log-item';
+            
+            const timeStr = new Date(item.time * 1000).toISOString().substr(11, 8);
+            const simTag = item.is_sim ? '<span class="log-sim">SIM</span>' : '';
+            
+            let contentHtml = '';
+            
+            // [수정] 각 필드에 대해 truncate 함수 적용하여 레이아웃 깨짐 방지
+            if (item.theme === 'wiki') {
+                const safeTitle = truncate(item.title, 40);
+                contentHtml = `${item.user} @ <a href="${item.url}" target="_blank" class="log-highlight">${safeTitle}</a>`;
+            } else if (item.theme === 'btc') {
+                const safeHash = truncate(item.hash, 12);
+                contentHtml = `TX: <a href="${item.url}" target="_blank" class="log-highlight">${safeHash}</a> <span style="color:var(--text-color)">(${item.btc} BTC)</span>`;
+            } else if (item.theme === 'github') {
+                const safeRepo = truncate(item.repo, 30);
+                contentHtml = `[${item.type}] ${item.user} @ <a href="${item.url}" target="_blank" class="log-highlight">${safeRepo}</a>`;
+            }
+
+            div.innerHTML = `<span class="log-time">${timeStr}</span>${simTag}${contentHtml}`;
+            
+            listContainer.insertBefore(div, listContainer.firstChild);
+            if (listContainer.children.length > maxLogs) listContainer.removeChild(listContainer.lastChild);
+        }
+
+        // Typing Effect Loop
+        async function runDisplayLoop() {
+            if (eventQueue.length > 0) {
+                const item = eventQueue.shift();
+                
+                renderTopList(item);
+                detailContainer.innerHTML = '';
+                
+                let displayObj = {};
+                if (item.theme === 'wiki') {
+                    displayObj = { 
+                        type: 'wiki_edit', 
+                        user: item.user, 
+                        title: item.title, 
+                        timestamp: item.time,
+                        meta: { minor: item.raw.minor, bot: item.raw.bot } 
+                    };
+                } else if (item.theme === 'btc') {
+                    displayObj = { 
+                        type: 'btc_tx', 
+                        hash: item.hash, 
+                        value: item.btc + " BTC", 
+                        size: item.raw.size, 
+                        relayed: item.raw.relayed_by 
+                    };
+                } else if (item.theme === 'github') {
+                    displayObj = { 
+                        type: item.type, 
+                        actor: item.user, 
+                        repo: item.repo, 
+                        payload_head: (item.raw.payload && item.raw.payload.head) || "..." 
+                    };
+                }
+
+                const jsonStr = JSON.stringify(displayObj, null, 2);
+                const lines = jsonStr.split('\n');
+
+                for (const line of lines) {
+                    if (currentTheme !== item.theme) break; 
+
+                    const lineEl = document.createElement('div');
+                    lineEl.className = 'cli-line';
+                    detailContainer.appendChild(lineEl);
+
+                    const tokens = line.match(/("(?:\\.|[^\\"])*"(?::)?|\b\d+\b|\b(true|false|null)\b|[\[\]{},:]|\s+)/g) || [line];
+
+                    for (const token of tokens) {
+                        const span = document.createElement('span');
+                        span.textContent = token;
+
+                        if (token.endsWith(':')) {
+                            span.className = 'json-key';
+                        } else if (token.startsWith('"')) {
+                            if(token.includes('BTC') || token.includes('Hash')) span.className = 'json-special';
+                            else span.className = 'json-string';
+                        } else if (/^\d+$/.test(token)) {
+                            span.className = 'json-number';
+                        } else if (/^true|false|null$/.test(token)) {
+                            span.className = 'json-bool';
+                        }
+                        
+                        lineEl.appendChild(span);
+                        detailContainer.scrollTop = detailContainer.scrollHeight;
+
+                        const isSpace = /^\s+$/.test(token);
+                        const delay = isSpace ? 5 : Math.floor(Math.random() * 30 + 20);
+                        await new Promise(r => setTimeout(r, delay));
+                    }
+                    await new Promise(r => setTimeout(r, 10));
+                }
+
+                await new Promise(r => setTimeout(r, Math.random() * 1000 + 1000));
+                runDisplayLoop();
+
+            } else {
+                setTimeout(runDisplayLoop, 500);
+            }
+        }
+
+        switchTheme('wiki'); 
+        runDisplayLoop();
+
+        window.addEventListener('offline', () => { 
+            if(currentTheme === 'wiki') startSimulation('wiki');
+            else if(currentTheme === 'btc') startSimulation('btc');
+            else if(currentTheme === 'github') startSimulation('github');
+        });
+        window.addEventListener('online', () => { window.location.reload(); });
+
+    </script>
+</body>
+</html>
