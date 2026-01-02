@@ -496,37 +496,67 @@
         }
 
         // --- C. GITHUB (Polling) ---
-        async function fetchGithub() {
+async function fetchGithub() {
             if (currentTheme !== 'github') return;
+
             try {
-                const res = await fetch('https://api.github.com/events?per_page=30', {cache: 'no-store'});
-                if (res.status === 403 || res.status === 429) { startSimulation('github', true); return; }
+                // 1. 한 번에 100개 요청 (꽉 채워서 가져옴)
+                const res = await fetch('https://api.github.com/events?per_page=100', { cache: 'no-store' });
+                
+                // 2. 레이트 리밋(403/429) 걸리면 시뮬레이션 모드로 전환
+                if (res.status === 403 || res.status === 429) { 
+                    console.warn("GitHub Rate Limit Hit. Switching to Simulation.");
+                    startSimulation('github', true); 
+                    return; 
+                }
+
                 const events = await res.json();
                 
+                // 3. 중복 제거 및 큐 적재
+                // 받아온 데이터는 최신순이므로 역순(오래된 것부터)으로 큐에 넣어야 시간 순서가 맞음
+                let newCount = 0;
                 events.reverse().forEach(evt => {
                     if (!seenGithubIds.has(evt.id)) {
                         seenGithubIds.add(evt.id);
+                        newCount++;
+                        
                         eventQueue.push({
                             theme: 'github',
                             repo: evt.repo.name,
                             type: evt.type,
                             user: evt.actor.login,
                             url: `https://github.com/${evt.repo.name}`,
-                            time: new Date(evt.created_at).getTime()/1000,
+                            time: new Date(evt.created_at).getTime() / 1000,
                             raw: evt
                         });
                     }
                 });
-                if(seenGithubIds.size > 500) seenGithubIds = new Set(Array.from(seenGithubIds).slice(-200));
+
+                // 4. 메모리 관리 (ID Set이 너무 커지면 정리)
+                if (seenGithubIds.size > 2000) {
+                    // 최신 1000개만 남기고 초기화 (Set -> Array -> Slice -> Set)
+                    const tempArr = Array.from(seenGithubIds).slice(-1000);
+                    seenGithubIds = new Set(tempArr);
+                }
                 
                 setLiveStatus();
-            } catch (e) { startSimulation('github'); }
+                // console.log(`Github: Fetched 100, New ${newCount}, Queue Size ${eventQueue.length}`);
+
+            } catch (e) {
+                console.error("Github Fetch Error:", e);
+                startSimulation('github');
+            }
         }
 
         function startGithubStream() {
             if (!navigator.onLine) { startSimulation('github'); return; }
+            
+            // 1. 시작하자마자 한 번 긁어옴
             fetchGithub(); 
-            githubInterval = setInterval(fetchGithub, 6000); 
+            
+            // 2. 70초마다 실행 (시간당 60회 제한 준수: 3600/70 ≈ 51회)
+            // 기존 6000ms -> 70000ms 로 변경
+            githubInterval = setInterval(fetchGithub, 70000); 
         }
 
         // --- D. SIMULATION (Offline/Fallback) ---
