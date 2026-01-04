@@ -12,51 +12,10 @@
             --dim-color: #333;
         }
 
-        /* 1. Theme: Wikipedia (Matrix/Terminal Green) */
-        body.theme-wiki {
-            --text-color: #0f0;
-            --accent-color: #0f0;
-            --dim-color: #005500;
-            --panel-bg: rgba(0, 20, 0, 0.3);
-            --highlight: #cfc;
-            
-            --syn-key: #0a0;       
-            --syn-str: #cfc;       
-            --syn-num: #fff;       
-            --syn-bool: #8f8;      
-            --syn-special: #0f0;
-        }
-
-        /* 2. Theme: Bitcoin (Satoshi Orange & Warm Darks) */
-        body.theme-btc {
-            --text-color: #f7931a;
-            --accent-color: #f7931a;
-            --dim-color: #5d3a00;
-            --panel-bg: rgba(40, 20, 0, 0.3);
-            --highlight: #ffe4b5;
-
-            --syn-key: #c57816;    
-            --syn-str: #ffe4b5;    
-            --syn-num: #ff6b6b;    
-            --syn-bool: #ff9f43;   
-            --syn-special: #fff;   
-        }
-
-        /* 3. Theme: Github (Dimmed Dark Blue & Candy) */
-        body.theme-github {
-            --bg-color: #0d1117;
-            --text-color: #58a6ff; 
-            --accent-color: #58a6ff;
-            --dim-color: #30363d;
-            --panel-bg: rgba(22, 27, 34, 0.8);
-            --highlight: #a5d6ff;
-
-            --syn-key: #7ee787;    
-            --syn-str: #a5d6ff;    
-            --syn-num: #79c0ff;    
-            --syn-bool: #ff7b72;   
-            --syn-special: #d29922;
-        }
+        /* Themes */
+        body.theme-wiki { --text-color: #0f0; --accent-color: #0f0; --dim-color: #005500; --panel-bg: rgba(0, 20, 0, 0.3); --highlight: #cfc; --syn-key: #0a0; --syn-str: #cfc; --syn-num: #fff; --syn-bool: #8f8; --syn-special: #0f0; }
+        body.theme-btc { --text-color: #f7931a; --accent-color: #f7931a; --dim-color: #5d3a00; --panel-bg: rgba(40, 20, 0, 0.3); --highlight: #ffe4b5; --syn-key: #c57816; --syn-str: #ffe4b5; --syn-num: #ff6b6b; --syn-bool: #ff9f43; --syn-special: #fff; }
+        body.theme-github { --bg-color: #0d1117; --text-color: #58a6ff; --accent-color: #58a6ff; --dim-color: #30363d; --panel-bg: rgba(22, 27, 34, 0.8); --highlight: #a5d6ff; --syn-key: #7ee787; --syn-str: #a5d6ff; --syn-num: #79c0ff; --syn-bool: #ff7b72; --syn-special: #d29922; }
 
         body {
             background-color: var(--bg-color);
@@ -78,193 +37,147 @@
 
         /* === LAYOUT STATES === */
         .panel-left {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center; 
-            padding: 40px;
-            transition: all 0.5s ease;
-            width: 100%;
-            height: 100vh; 
-            box-sizing: border-box;
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            padding: 40px; transition: all 0.5s ease; width: 100%; height: 100vh; box-sizing: border-box; 
+            z-index: 10; position: relative; overflow: hidden;
         }
 
         .clock-grid {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center; 
-            height: 100%;
-            margin: auto;
-            text-align: center; 
+            display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+            height: 100%; margin: auto; text-align: left; 
+            width: 100%; max-width: 600px;
+            padding-bottom: 60px; 
         }
 
         .grid-label {
-            font-size: 0.9rem; 
-            opacity: 0.6; 
-            margin-top: 3rem; 
-            margin-bottom: 0.5rem;
-            letter-spacing: 1px;
-            text-align: center; 
-            width: 100%;
-            display: block;
+            font-size: 0.9rem; opacity: 0.6; margin-top: 2rem; margin-bottom: 0.5rem;
+            letter-spacing: 1px; text-align: left; width: 100%; display: block;
         }
         .grid-label:first-child { margin-top: 0; }
 
         .grid-value {
-            font-size: clamp(3rem, 8vw, 6rem); 
-            font-weight: bold; 
-            letter-spacing: 2px;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
-            white-space: nowrap;
-            line-height: 1;
+            font-size: clamp(3rem, 7vw, 6rem);
+            font-weight: bold; letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.15); white-space: nowrap; line-height: 1;
         }
-        #unix { font-size: clamp(2.5rem, 6vw, 5rem); }
+        #unix { font-size: clamp(2.5rem, 6vw, 5rem); transition: font-size 0.3s; }
 
         .panel-right-container {
-            display: none; 
-            flex: 1;
-            flex-direction: column;
-            height: 100vh;
-            min-width: 0;
-            opacity: 0;
-            transition: opacity 0.5s;
-            border-left: 1px solid var(--dim-color);
+            display: none; flex: 1; flex-direction: column; height: 100vh; min-width: 0;
+            opacity: 0; transition: opacity 0.5s; border-left: 1px solid var(--dim-color); z-index: 10;
         }
 
-        body.mode-split .panel-left {
-            flex: 0 0 450px; 
-            align-items: flex-start; 
-            justify-content: space-between;
+        /* SPLIT MODE LAYOUT */
+        body.mode-split .panel-left { 
+            flex: 0 0 40%; 
+            min-width: 480px; 
+            align-items: center; 
+            justify-content: space-between; 
             border-right: none; 
         }
+        
         body.mode-split .panel-right-container { display: flex; opacity: 1; }
-        body.mode-split .clock-grid { align-items: flex-start; text-align: left; margin: 0; height: auto; margin-top: auto; margin-bottom: auto; }
-        body.mode-split .grid-label { text-align: left; }
-        body.mode-split .grid-value { font-size: clamp(2.5rem, 6vw, 4.5rem); }
-
-        .panel-top-right {
-            flex: 1; 
-            padding: 20px;
-            background: var(--panel-bg);
-            border-bottom: 1px solid var(--dim-color);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            min-height: 200px;
+        
+        body.mode-split .clock-grid { 
+            align-items: flex-start; 
+            text-align: left; 
+            margin: auto; 
+            height: auto; 
+            width: 90%; 
+            max-width: none; 
         }
-
-        .panel-bottom-right {
-            flex: 1; 
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            position: relative; 
-            min-height: 200px;
-        }
+        
+        .panel-top-right { flex: 1; padding: 20px; background: var(--panel-bg); border-bottom: 1px solid var(--dim-color); overflow: hidden; display: flex; flex-direction: column; min-height: 200px; }
+        .panel-bottom-right { flex: 1; padding: 20px; background: rgba(0, 0, 0, 0.5); overflow: hidden; display: flex; flex-direction: column; position: relative; min-height: 200px; }
 
         .panel-header {
-            border-bottom: 1px solid var(--dim-color);
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end; 
-            opacity: 0.8;
-            color: var(--accent-color);
+            border-bottom: 1px solid var(--dim-color); padding-bottom: 8px; margin-bottom: 15px;
+            font-weight: bold; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: flex-end; 
+            opacity: 0.8; color: var(--accent-color);
         }
 
-        .lang-toggle {
-            font-size: 0.75rem;
-            cursor: pointer;
-            opacity: 0.5;
-            margin-left: 10px;
-            border: 1px solid var(--accent-color);
-            padding: 2px 6px;
-            transition: all 0.3s;
-            display: none; 
+        .lang-toggle, .fmt-btn, .ctrl-btn {
+            font-size: 0.75rem; cursor: pointer; opacity: 0.5; margin-left: 10px;
+            border: 1px solid var(--accent-color); padding: 2px 6px; transition: all 0.3s; display: inline-block;
         }
+        .ctrl-btn { margin-left: 0; margin-right: 15px; border-color: var(--text-color); color: var(--text-color);}
+        .lang-toggle { display: none; }
         .lang-toggle.visible { display: inline-block; }
-        .lang-toggle:hover { opacity: 0.8; }
-        .lang-toggle.active {
-            opacity: 1;
-            background: var(--accent-color);
-            color: var(--bg-color);
-            font-weight: bold;
+        .lang-toggle:hover, .fmt-btn:hover, .ctrl-btn:hover { opacity: 0.8; }
+        .lang-toggle.active, .fmt-btn:active, .ctrl-btn.active {
+            opacity: 1; background: var(--accent-color); color: var(--bg-color); font-weight: bold;
         }
+        .ctrl-btn.active { background: var(--text-color); color: var(--bg-color); border-color: var(--text-color); }
 
-        .log-item {
-            margin-bottom: 6px;
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            animation: slideIn 0.2s ease-out;
-            border-left: 2px solid transparent;
-            padding-left: 5px;
-            font-size: 0.8rem;
-        }
+        .log-item { margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: slideIn 0.2s ease-out; border-left: 2px solid transparent; padding-left: 5px; font-size: 0.8rem; }
         .log-item:first-child { border-left-color: var(--accent-color); font-weight: bold;}
         @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
         
         .log-time { opacity: 0.5; margin-right: 10px; font-size: 0.7em;}
-        .log-highlight { color: var(--highlight); font-weight: bold;}
-        .log-sim { color: #fa0; font-size: 0.7em; border: 1px solid #fa0; padding: 0 2px; margin-right: 5px;}
+        .log-highlight { color: var(--highlight); font-weight: bold; text-decoration: none; border-bottom: 1px dotted var(--highlight); transition: all 0.2s; }
+        .log-sim-link { color: var(--highlight); font-weight: bold; cursor: default; opacity: 0.9; }
         .log-stat { color: #2ea043; font-size: 0.8em; margin-right: 8px; font-weight: bold; font-family: 'Courier New', monospace; letter-spacing: -0.5px;}
 
         #list-container { flex: 1; overflow-y: hidden; }
-        
-        #detail-container {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem; 
-            overflow-y: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            height: 100%;
-            line-height: 1.6;
-        }
+        #detail-container { font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; overflow-y: hidden; display: flex; flex-direction: column; justify-content: flex-start; height: 100%; line-height: 1.6; }
 
         .cli-line { white-space: pre-wrap; word-wrap: break-word; margin: 0; min-height: 1.2em; }
-        .json-key { color: var(--syn-key); }
-        .json-string { color: var(--syn-str); }
-        .json-number { color: var(--syn-num); }
-        .json-bool { color: var(--syn-bool); font-weight: bold; }
-        .json-special { color: var(--syn-special); font-weight: bold; } 
+        .json-key { color: var(--syn-key); } .json-string { color: var(--syn-str); } .json-number { color: var(--syn-num); } .json-bool { color: var(--syn-bool); font-weight: bold; } .json-special { color: var(--syn-special); font-weight: bold; } 
         .wiki-text { color: var(--syn-str); opacity: 0.9; }
 
-        .left-footer { 
-            text-align: center; opacity: 0.8; padding-top: 20px; 
-            border-top: 1px solid var(--dim-color); 
-            display: flex; flex-direction: column; gap: 5px; 
-            width: 100%;
-        }
-        
+        .left-footer { text-align: center; opacity: 0.8; padding-top: 15px; border-top: 1px solid var(--dim-color); display: flex; flex-direction: column; gap: 5px; width: 100%; }
         .footer-text { font-size: 0.65rem; opacity: 0.5; letter-spacing: 1px;}
         #y2k38-countdown { color: var(--text-color); font-weight: bold; opacity: 0.8;} 
 
-        .theme-nav {
-            margin-top: auto; 
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            font-size: 0.85rem;
-            width: 100%;
-        }
+        .theme-nav { margin-top: 0; margin-bottom: 10px; display: flex; justify-content: center; gap: 20px; font-size: 0.85rem; width: 100%; }
+        .control-nav { margin-bottom: 15px; display: flex; justify-content: center; width: 100%; font-size: 0.75rem; }
+        
         .nav-btn { cursor: pointer; transition: all 0.3s; color: var(--text-color); opacity: 0.4; }
         .nav-btn:hover { opacity: 0.8; }
         .nav-btn.active { opacity: 1; font-weight: bold; text-shadow: 0 0 5px var(--accent-color); border-bottom: 1px solid var(--accent-color); }
         
         .label-ext { font-size: 0.7em; margin-left: 8px; color: var(--accent-color); opacity: 0.8; font-weight: bold; }
         .live-indicator { color: #f00; animation: blink 1s infinite; white-space: nowrap; margin-bottom: 1px;}
-        .live-indicator.sim { color: #fa0; animation: none;} 
         .live-indicator.refill { color: var(--text-color); animation: blink 0.5s infinite; opacity: 0.7; }
         @keyframes blink { 50% { opacity: 0; } }
+
+        /* GRAPH STYLES */
+        #rtt-graph-container { width: 100%; height: 80px; margin-bottom: 15px; display: none; border-bottom: 1px solid var(--dim-color); position: relative; }
+        canvas { display: block; }
+
+        /* === DRAWER STYLES === */
+        #bottom-drawer {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            background: linear-gradient(to top, var(--bg-color) 80%, transparent 100%);
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+            transform: translateY(0);
+            opacity: 1;
+            z-index: 50;
+        }
+        
+        #bottom-drawer.retracted {
+            transform: translateY(110%);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* === CRT EFFECT === */
+        body.crt::after {
+            content: " "; display: block; position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 2px 100%;
+            z-index: 9999; pointer-events: none; opacity: 0.4;
+        }
+        body.crt::before {
+            content: " "; display: block; position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
+            z-index: 9998; pointer-events: none;
+        }
 
         @media (max-width: 768px) {
             body { flex-direction: column; overflow: auto; height: auto;}
@@ -275,567 +188,393 @@
             body.mode-split .panel-right-container { display: flex; height: auto; }
             .panel-top-right, .panel-bottom-right { height: 40vh; flex: none; }
             .grid-label { margin-top: 2rem; }
+            .clock-grid { align-items: center; text-align: center; } 
+            .grid-label { text-align: center; justify-content: center !important; }
         }
     </style>
 </head>
 <body class="theme-wiki"> 
 
-    <div class="panel-left">
+    <div class="panel-left" id="left-panel-area">
         <div style="flex:1" class="split-spacer"></div> 
         <div class="clock-grid">
-            <div class="grid-label">CURRENT TIME <span id="local-offset" class="label-ext"></span></div>
-            <div class="grid-value" id="local">--:--:--</div>
             
+            <div id="rtt-graph-container">
+                <canvas id="rtt-canvas"></canvas>
+                <div style="position:absolute; top:2px; right:2px; font-size:0.6rem; opacity:0.7;">NETWORK IO</div>
+            </div>
+
+            <div class="grid-label" style="display:flex; align-items:center; justify-content:flex-start; gap:10px; width:100%;">
+                <span>TARGET:</span>
+                <input type="text" id="target-input" value="localhost" spellcheck="false"
+                       style="background:transparent; border:none; border-bottom:1px solid var(--dim-color); 
+                              color:var(--accent-color); font-family:inherit; font-size:1rem; 
+                              width:180px; text-align:left; outline:none; font-weight:bold;">
+                <span id="reset-btn" onclick="resetTarget()" 
+                      style="cursor:pointer; font-size:0.8rem; opacity:0.5; border:1px solid var(--dim-color); padding:0 5px; display:none;">
+                    [R]
+                </span>
+            </div>
+            
+            <div class="grid-value" id="monitor-value" style="font-size: clamp(2.5rem, 6vw, 5rem);">--:--:--</div>
+            <div id="ping-stat" style="height:20px; font-size:0.9rem; color:var(--accent-color); opacity:0.8; font-weight:bold; margin-bottom:10px; text-align:left; width:100%;"></div>
+
             <div class="grid-label">UTC TIME <span id="utc-diff" class="label-ext"></span></div>
             <div class="grid-value" id="utc">--:--:--</div>
             
-            <div class="grid-label">UNIX TIMESTAMP</div>
+            <div class="grid-label">
+                UNIX TIMESTAMP
+                <span id="unix-fmt-btn" class="fmt-btn" onclick="toggleUnixFormat()">[DEC]</span>
+            </div>
             <div class="grid-value" id="unix">Loading...</div>
+
         </div>
         <div style="flex:1" class="split-spacer"></div>
 
-        <div class="theme-nav">
-            <span class="nav-btn" onclick="toggleMode('btc')">[ BTC ]</span>
-            <span class="nav-btn" onclick="toggleMode('wiki')">[ Wikipedia ]</span>
-            <span class="nav-btn" onclick="toggleMode('github')">[ Github ]</span>
+        <div id="bottom-drawer">
+            <div class="theme-nav">
+                <span class="nav-btn" onclick="toggleMode('btc')">[ BTC ]</span>
+                <span class="nav-btn" onclick="toggleMode('wiki')">[ Wikipedia ]</span>
+                <span class="nav-btn" onclick="toggleMode('github')">[ Github ]</span>
+            </div>
+
+            <div class="control-nav">
+                <span id="btn-crt" class="ctrl-btn" onclick="toggleCRT()">[none]</span>
+                <span id="btn-sound" class="ctrl-btn" onclick="toggleSound()">[muted]</span>
+                <span id="btn-screen" class="ctrl-btn" onclick="toggleScreen()">[windowed]</span>
+            </div>
+
+            <div class="left-footer">
+                <div id="y2k38-countdown" class="footer-text">Calculating...</div>
+                <div class="footer-text">Inquiries: <a href="mailto:nashdir.dev@gmail.com">nashdir.dev@gmail.com</a></div>
+            </div>
         </div>
 
-        <div class="left-footer">
-            <div id="y2k38-countdown" class="footer-text">Calculating...</div>
-            <div class="footer-text">Inquiries: <a href="mailto:nashdir.dev@gmail.com">nashdir.dev@gmail.com</a></div>
-        </div>
     </div>
 
     <div class="panel-right-container">
         <div class="panel-top-right">
             <div class="panel-header">
                 <div>
-                    <span id="stream-title" class="header-title">> EVENT STREAM</span>
+                    <span id="stream-title" class="header-title">> SYSTEM BOOT</span>
                     <span id="wiki-lang-toggle" class="lang-toggle" onclick="toggleWikiLang()">[ GLOBAL ]</span>
                 </div>
-                <span id="status-indicator" class="live-indicator">● LIVE</span>
+                <span id="status-indicator" class="live-indicator">● INIT</span>
             </div>
-            <div id="list-container">
-                <div class="log-item" style="opacity: 0.5;">System initialized. Waiting for stream selection...</div>
-            </div>
+            <div id="list-container"></div>
         </div>
         <div class="panel-bottom-right">
              <div class="panel-header">
-                <span id="payload-title" class="header-title">> INCOMING PACKET PAYLOAD</span>
+                <span id="payload-title" class="header-title">> KERNEL MESSAGES</span>
             </div>
             <div id="detail-container"></div>
         </div>
     </div>
 
     <script>
-        // === 1. CLOCK LOGIC ===
-        function updateTime() {
-            const now = new Date();
-            const pad = (n) => String(n).padStart(2, '0');
-            document.getElementById('local').innerText = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-            document.getElementById('utc').innerText = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
-            document.getElementById('unix').innerText = Math.floor(now.getTime() / 1000);
+        // === DRAWER LOGIC ===
+        const drawer = document.getElementById('bottom-drawer');
+        const leftPanel = document.getElementById('left-panel-area');
+        let drawerTimer = null;
+        let isDrawerLocked = false; 
 
-            const offsetMinutes = -now.getTimezoneOffset();
-            const sign = offsetMinutes >= 0 ? '+' : '-';
-            const offH = pad(Math.floor(Math.abs(offsetMinutes) / 60));
-            const offM = pad(Math.abs(offsetMinutes) % 60);
-            document.getElementById('local-offset').innerText = `UTC${sign}${offH}${offM}`;
-
-            const localDate = now.getDate();
-            const utcDate = now.getUTCDate();
-            let diffTag = (localDate !== utcDate) ? (now.getTimezoneOffset() > 0 ? "(+D)" : "(-D)") : "";
-            document.getElementById('utc-diff').innerText = diffTag;
-
-            const target = new Date(Date.UTC(2038, 0, 19, 3, 14, 7));
-            let diff = target - now;
-            let seconds = Math.floor(diff / 1000);
-            let minutes = Math.floor(seconds / 60);
-            let hours = Math.floor(minutes / 60);
-            let days = Math.floor(hours / 24);
-            let years = Math.floor(days / 365);
-            days %= 365; hours %= 24; minutes %= 60; seconds %= 60;
-            document.getElementById('y2k38-countdown').innerText = `${years}y ${pad(days)}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s until Y2K38`;
-        }
-        setInterval(updateTime, 1000); updateTime();
-
-        // === 2. STREAM & VIEW MANAGER ===
-        const listContainer = document.getElementById('list-container');
-        const detailContainer = document.getElementById('detail-container');
-        const statusIndicator = document.getElementById('status-indicator');
-        const streamTitle = document.getElementById('stream-title');
-        const payloadTitle = document.getElementById('payload-title');
-        const wikiLangToggle = document.getElementById('wiki-lang-toggle');
-        
-        let currentTheme = null; 
-        let isSplitMode = false;
-        
-        let eventQueue = [];   
-        let stagingQueue = []; 
-
-        const maxLogs = 20;
-
-        let isRefilling = false; 
-        let wikiSource = null;
-        let btcSocket = null;
-        let simInterval = null;
-        let priceInterval = null;
-        
-        let displayLoopRunning = false;
-        
-        // [SETTINGS]
-        let isWikiEnglishOnly = false; 
-        let btcPrice = 0; 
-        let lastGithubFetchTime = 0;
-
-        function toggleMode(targetTheme) {
-            if (isSplitMode && currentTheme === targetTheme) {
-                closeSplitMode();
-            } else {
-                openSplitMode(targetTheme);
+        function hideDrawer() {
+            if (!isDrawerLocked) {
+                drawer.classList.add('retracted');
             }
         }
 
-        function closeSplitMode() {
-            isSplitMode = false;
-            document.body.classList.remove('mode-split');
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            stopAllStreams();
-            eventQueue = [];
-            stagingQueue = [];
-            currentTheme = null;
-            wikiLangToggle.classList.remove('visible'); 
+        function showDrawer() {
+            drawer.classList.remove('retracted');
         }
 
-        function openSplitMode(theme) {
-            isSplitMode = true;
-            document.body.classList.add('mode-split');
-            switchTheme(theme);
-        }
+        setTimeout(() => { hideDrawer(); }, 10000);
 
-        function toggleWikiLang() {
-            isWikiEnglishOnly = !isWikiEnglishOnly;
-            if(isWikiEnglishOnly) {
-                wikiLangToggle.innerText = "[ EN ONLY ]";
-                wikiLangToggle.classList.add('active');
-            } else {
-                wikiLangToggle.innerText = "[ GLOBAL ]";
-                wikiLangToggle.classList.remove('active');
-            }
-            eventQueue = []; stagingQueue = [];
-            stopAllStreams(); checkRefillNeeded(); 
-        }
+        leftPanel.addEventListener('mousemove', (e) => {
+            const panelHeight = leftPanel.offsetHeight;
+            const threshold = panelHeight * 0.80; 
+            if (e.clientY > threshold) { showDrawer(); } else { hideDrawer(); }
+        });
 
-        function switchTheme(theme) {
-            if(currentTheme === theme) return;
+        drawer.addEventListener('mouseenter', () => { isDrawerLocked = true; showDrawer(); });
+        drawer.addEventListener('mouseleave', () => { isDrawerLocked = false; });
+        leftPanel.addEventListener('touchstart', (e) => {
+            const touchY = e.touches[0].clientY;
+            const panelHeight = leftPanel.offsetHeight;
+            if (touchY > panelHeight * 0.80) { showDrawer(); }
+        });
 
-            stopAllStreams();
-            eventQueue = []; 
-            stagingQueue = []; 
-            detailContainer.innerHTML = ''; 
-            listContainer.innerHTML = '';
-            
-            document.body.className = `theme-${theme} mode-split`; 
-            
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                if(btn.innerText.toLowerCase().includes(theme)) btn.classList.add('active');
-                else btn.classList.remove('active');
-            });
 
-            currentTheme = theme;
-            wikiLangToggle.classList.remove('visible');
-
-            if (theme === 'wiki') {
-                streamTitle.innerText = "> EVENT STREAM (WIKIPEDIA)";
-                payloadTitle.innerText = "> REVISED ARTICLE"; 
-                wikiLangToggle.classList.add('visible');
-                checkRefillNeeded();
-            } else if (theme === 'btc') {
-                updateBtcPrice(); 
-                priceInterval = setInterval(updateBtcPrice, 15000); 
-                
-                streamTitle.innerText = "> MEMPOOL TRANSACTIONS (LOADING...)";
-                payloadTitle.innerText = "> INCOMING PACKET PAYLOAD";
-                startBtcStream(); 
-            } else if (theme === 'github') {
-                streamTitle.innerText = "> REPOSITORY EVENTS (GITHUB)";
-                payloadTitle.innerText = "> INCOMING PACKET PAYLOAD";
-                checkRefillNeeded();
-            }
-            
-            if(!displayLoopRunning) {
-                displayLoopRunning = true;
-                runDisplayLoop();
-            }
-        }
-
-        function stopAllStreams() {
-            if(wikiSource) { wikiSource.close(); wikiSource = null; }
-            if(btcSocket) { btcSocket.close(); btcSocket = null; }
-            if(simInterval) { clearInterval(simInterval); simInterval = null; }
-            if(priceInterval) { clearInterval(priceInterval); priceInterval = null; }
-            isRefilling = false;
-            statusIndicator.innerText = "● IDLE";
-            statusIndicator.className = "live-indicator";
-        }
-
-        function updateStatus(state) {
-            statusIndicator.className = "live-indicator";
-            if(state === 'live') {
-                statusIndicator.innerText = "● LIVE";
-                if(simInterval) { clearInterval(simInterval); simInterval = null; }
-            } else if (state === 'refill') {
-                statusIndicator.innerText = "● RECEIVING TRANSMISSION";
-                statusIndicator.classList.add('refill');
-            } else if (state === 'sim') {
-                statusIndicator.innerText = "● SIMULATING";
-                statusIndicator.classList.add('sim');
-            }
-        }
-
-        // === 3. DATA SOURCES ===
-        
-        function checkRefillNeeded() {
-            if (!isSplitMode || isRefilling) return;
-
-            if (eventQueue.length < 3 && stagingQueue.length > 0) {
-                 while(stagingQueue.length > 0) eventQueue.push(stagingQueue.shift());
-            }
-
-            const totalItems = eventQueue.length + stagingQueue.length;
-            
-            if (currentTheme === 'wiki' && totalItems < 10) {
-                fetchWikiBatch();
-            } else if (currentTheme === 'github') {
-                const now = Date.now();
-                // Fetch if empty OR 5 minutes passed
-                if (totalItems === 0 || (now - lastGithubFetchTime > 300000)) {
-                    fetchGithubBatch();
-                }
-            }
-        }
-
-        // --- Wikipedia ---
-        function fetchWikiBatch() {
-            if (!navigator.onLine) { startSimulation('wiki'); return; }
-            isRefilling = true; updateStatus('refill');
-            
-            wikiSource = new EventSource('https://stream.wikimedia.org/v2/stream/recentchange');
-            let batchCount = 0;
-            const BATCH_TARGET = 15; 
-
-            wikiSource.onmessage = async (e) => {
-                if(!isSplitMode || currentTheme !== 'wiki') { wikiSource.close(); return; }
-                const data = JSON.parse(e.data);
-                
-                let isValid = false;
-                if (data.namespace === 0 && (data.type === 'edit' || data.type === 'new')) {
-                    if (isWikiEnglishOnly) {
-                        if (data.server_name === 'en.wikipedia.org') isValid = true;
-                    } else {
-                        if (data.server_name.endsWith('wikipedia.org')) isValid = true;
-                    }
-                }
-
-                if (isValid) {
-                    batchCount++;
-                    if(batchCount >= BATCH_TARGET) {
-                        wikiSource.close(); wikiSource = null;
-                        isRefilling = false; updateStatus('live');
-                        if(eventQueue.length === 0) while(stagingQueue.length > 0) eventQueue.push(stagingQueue.shift());
-                    }
-
-                    try {
-                        const summaryRes = await fetch(`https://${data.server_name}/api/rest_v1/page/summary/${encodeURIComponent(data.title)}`);
-                        let extract = null;
-                        if(summaryRes.ok) {
-                            const summaryJson = await summaryRes.json();
-                            extract = summaryJson.extract;
-                        }
-                        if (!extract) extract = data.comment ? `[Comment] ${data.comment}` : `(No summary available)`;
-
-                        if (extract) {
-                            stagingQueue.push({
-                                theme: 'wiki', title: data.title, user: data.user,
-                                url: data.server_url + '/wiki/' + encodeURIComponent(data.title),
-                                time: data.timestamp, summary: extract, raw: data,
-                                lang: data.server_name.split('.')[0].toUpperCase()
-                            });
-                        }
-                    } catch(err) {
-                        stagingQueue.push({
-                            theme: 'wiki', title: data.title, user: data.user,
-                            url: data.server_url + '/wiki/' + encodeURIComponent(data.title),
-                            time: data.timestamp, summary: `[${data.server_name}] Transmission received.`, raw: data,
-                            lang: data.server_name.split('.')[0].toUpperCase()
-                        });
-                    }
-                }
-            };
-            wikiSource.onerror = () => { if(isSplitMode && currentTheme === 'wiki') { wikiSource.close(); startSimulation('wiki'); } isRefilling = false; };
-        }
-
-        // --- Github ---
-        async function fetchGithubBatch() {
-            if (currentTheme !== 'github' || !isSplitMode) return;
-            if (!navigator.onLine) { startSimulation('github'); return; }
-
-            isRefilling = true; updateStatus('refill');
-
-            try {
-                // Fetch 100 items (Max per page)
-                const res = await fetch('https://api.github.com/events?per_page=100', { cache: 'no-store' });
-                lastGithubFetchTime = Date.now();
-
-                if (res.status === 403 || res.status === 429) { startSimulation('github', true); isRefilling = false; return; }
-                const events = await res.json();
-                
-                for (const evt of events) {
-                    stagingQueue.push({
-                        theme: 'github', repo: evt.repo.name, type: evt.type, user: evt.actor.login,
-                        url: `https://github.com/${evt.repo.name}`,
-                        time: new Date(evt.created_at).getTime() / 1000, raw: evt
-                    });
-                }
-
-                while(stagingQueue.length > 0) eventQueue.push(stagingQueue.shift());
-                isRefilling = false; updateStatus('live');
-            } catch (e) { if(isSplitMode) startSimulation('github'); isRefilling = false; }
-        }
-
-        // --- BTC ---
-        async function updateBtcPrice() {
-            try {
-                const res = await fetch('https://blockchain.info/ticker');
-                const data = await res.json();
-                btcPrice = data.USD.last;
-            } catch(e) { }
-        }
-
-        function startBtcStream() {
-            if (!navigator.onLine) { startSimulation('btc'); return; }
-            btcSocket = new WebSocket("wss://ws.blockchain.info/inv");
-            btcSocket.onopen = () => { updateStatus('live'); btcSocket.send(JSON.stringify({ "op": "unconfirmed_sub" })); };
-            btcSocket.onmessage = (msg) => {
-                if(!isSplitMode || currentTheme !== 'btc') { btcSocket.close(); return; }
-                const response = JSON.parse(msg.data);
-                if (response.op === "utx") {
-                    const tx = response.x;
-                    let totalSats = 0;
-                    if (tx.out) tx.out.forEach(o => totalSats += o.value);
-                    
-                    eventQueue.push({
-                        theme: 'btc', 
-                        hash: tx.hash, 
-                        btc: (totalSats / 100000000).toFixed(8),
-                        url: `https://www.blockchain.com/btc/tx/${tx.hash}`,
-                        time: tx.time, 
-                        raw: tx,
-                        price_snapshot: btcPrice 
-                    });
-                }
-            };
-            btcSocket.onerror = () => { if(isSplitMode) { btcSocket.close(); startSimulation('btc'); } };
-        }
-
-        function startSimulation(theme, isLimit = false) {
-            if (simInterval || !isSplitMode) return; 
-            updateStatus('sim');
-            simInterval = setInterval(() => {
-                if(!isSplitMode) return;
-                const now = Math.floor(Date.now() / 1000);
-                let item = null;
-                if (theme === 'wiki') {
-                    const simTitle = "Simulation_Theory_" + Math.floor(Math.random()*1000);
-                    item = { theme: 'wiki', is_sim: true, title: simTitle, user: "Sim_User", time: now, summary: "The simulation hypothesis proposes that all of reality, including the Earth and the universe, is in fact an artificial simulation.", raw: {}, lang: 'EN' };
-                }
-                else if (theme === 'btc') item = { theme: 'btc', is_sim: true, hash: Array(64).fill(0).map(()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join(''), btc: (Math.random()*5).toFixed(8), time: now, raw: { hash: "simulated_hash", inputs: [], out: [] }, price_snapshot: 98500.00 };
-                else if (theme === 'github') item = { theme: 'github', is_sim: true, repo: "simulation/offline-repo", type: "PushEvent", user: "Sim_Coder", time: now, raw: { type: "PushEvent", repo: {name: "offline"}, payload: { commits: [{message: "Simulated Commit Message"}] } } };
-                
-                if(item) eventQueue.push(item);
-            }, 2000);
-        }
-
-        // === 4. RENDERER (The Consumer) ===
-        function truncate(str, len) {
-            if (!str) return '';
-            return str.length > len ? str.substring(0, len) + "..." : str;
-        }
-
-        function renderTopList(item) {
-            const div = document.createElement('div');
-            div.className = 'log-item';
-            
-            const now = new Date();
-            const pad = (n) => String(n).padStart(2, '0');
-            const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-            const simTag = item.is_sim ? '<span class="log-sim">SIM</span>' : '';
-            
-            let contentHtml = '';
-            
-            // 1. WIKI
-            if (item.theme === 'wiki') {
-                const langTag = `<span style="color:var(--accent-color); font-weight:bold; font-size:0.8em; margin-right:5px;">[${item.lang || 'GLOBAL'}]</span>`;
-                contentHtml = `${langTag}${item.user} @ <a href="${item.url}" target="_blank" class="log-highlight">${truncate(item.title, 35)}</a>`;
-            }
-            // 2. BTC
-            else if (item.theme === 'btc') {
-                const refPrice = item.price_snapshot || btcPrice;
-                const usdVal = (parseFloat(item.btc) * refPrice).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                contentHtml = `TX: <a href="${item.url}" target="_blank" class="log-highlight">${truncate(item.hash, 12)}</a> <span style="color:var(--text-color)">(${item.btc} BTC / ${usdVal} USD)</span>`;
-            }
-            // 3. GITHUB
-            else if (item.theme === 'github') {
-                let badge = '';
-                const p = item.raw.payload;
-                if (item.type === 'PushEvent' && p.head) badge = p.head.substring(0, 7);
-                else if (item.type === 'WatchEvent') badge = '★STAR';
-                else if (item.type === 'ForkEvent') badge = '⑂FORK';
-                else if (p.issue) badge = '#' + p.issue.number;
-                else if (p.pull_request) badge = 'PR#' + p.pull_request.number;
-                else badge = 'ACTION';
-
-                const stats = `<span class="log-stat">${badge}</span>`;
-                contentHtml = `${stats}[${item.type}] ${item.user} @ <a href="${item.url}" target="_blank" class="log-highlight">${truncate(item.repo, 30)}</a>`;
-            }
-
-            div.innerHTML = `<span class="log-time">${timeStr}</span>${simTag}${contentHtml}`;
-            listContainer.insertBefore(div, listContainer.firstChild);
-            if (listContainer.children.length > maxLogs) listContainer.removeChild(listContainer.lastChild);
-        }
-
-        async function runDisplayLoop() {
-            if (!displayLoopRunning) return;
-
-            if (eventQueue.length < 3 && stagingQueue.length > 0) {
-                 while(stagingQueue.length > 0) eventQueue.push(stagingQueue.shift());
-            }
-            
-            if (isSplitMode && !isRefilling) {
-                checkRefillNeeded();
-            }
-
-            if (isSplitMode && eventQueue.length > 0) {
-                const item = eventQueue.shift();
-                renderTopList(item);
-                detailContainer.innerHTML = '';
-
-                if (item.theme === 'wiki') {
-                    const header = document.createElement('div');
-                    header.style.marginBottom = '15px';
-                    header.innerHTML = `<span style="color:var(--accent-color); font-weight:bold;">[${item.lang || 'GL'}] TITLE: ${item.title}</span><br><span style="opacity:0.6; font-size:0.8em">URL: ${item.url}</span>`;
-                    detailContainer.appendChild(header);
-
-                    const textDiv = document.createElement('div');
-                    textDiv.className = 'wiki-text';
-                    detailContainer.appendChild(textDiv);
-                    
-                    const words = (item.summary || "No summary available.").split(" ");
-                    for(const word of words) {
-                        if (!isSplitMode || currentTheme !== 'wiki') break;
-                        textDiv.textContent += word + " ";
-                        await new Promise(r => setTimeout(r, Math.random() * 30 + 50)); 
-                    }
-                    await new Promise(r => setTimeout(r, 2000));
+        // === SOUND FX MANAGER (WITH HUM) ===
+        const SoundFX = {
+            ctx: null, enabled: false,
+            humOsc: null, humGain: null,
+            init: function() { 
+                if (!this.ctx) { 
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)(); 
                 } 
-                else {
-                    let displayObj = {};
-                    if (item.theme === 'btc') {
-                        const refPrice = item.price_snapshot || btcPrice;
-                        streamTitle.innerText = `> MEMPOOL TRANSACTIONS (${refPrice.toLocaleString()} USD/BTC)`;
-                        
-                        displayObj = { type: 'btc_tx', hash: item.hash, value: item.btc + " BTC", usd_price_ref: refPrice, size: item.raw.size, relayed: item.raw.relayed_by };
+                if (this.ctx.state === 'suspended') { 
+                    this.ctx.resume(); 
+                } 
+            },
+            toggleHum: function(active) {
+                if (!this.ctx || !this.enabled) return;
+                
+                if (active) {
+                    if (!this.humOsc) {
+                        this.humOsc = this.ctx.createOscillator();
+                        this.humGain = this.ctx.createGain();
+                        this.humOsc.type = 'sawtooth';
+                        this.humOsc.frequency.value = 60; 
+                        this.humOsc.connect(this.humGain);
+                        this.humGain.connect(this.ctx.destination);
+                        this.humOsc.start();
+                        this.humGain.gain.setValueAtTime(0, this.ctx.currentTime);
                     }
-                    else if (item.theme === 'github') {
-                        // [MODIFIED] Payload Parsing Logic for Eye Candy
-                        const p = item.raw.payload;
-                        let extData = {};
-
-                        if (item.type === 'PushEvent') {
-                            extData = {
-                                branch: p.ref ? p.ref.replace('refs/heads/', '') : 'unknown',
-                                commit_msg: p.commits && p.commits.length > 0 ? p.commits[0].message : "Merge branch...",
-                                size: p.size,
-                                head_sha: p.head ? p.head.substring(0, 7) : "unknown"
-                            };
-                        } else if (item.type === 'IssuesEvent') {
-                            extData = {
-                                action: p.action,
-                                issue_title: p.issue.title,
-                                url: p.issue.html_url
-                            };
-                        } else if (item.type === 'PullRequestEvent') {
-                            extData = {
-                                action: p.action,
-                                pr_title: p.pull_request.title,
-                                state: p.pull_request.state,
-                                merged: p.pull_request.merged
-                            };
-                        } else if (item.type === 'WatchEvent') {
-                            extData = {
-                                action: 'star_added',
-                                description: "User starred this repository"
-                            };
-                        } else if (item.type === 'ForkEvent') {
-                            extData = {
-                                forkee: p.forkee.full_name,
-                                url: p.forkee.html_url
-                            };
-                        } else if (item.type === 'CreateEvent') {
-                            extData = {
-                                ref_type: p.ref_type,
-                                ref: p.ref || 'repository',
-                                description: p.description || "New creation"
-                            };
-                        }
-
-                        displayObj = {
-                            source: "GITHUB_EVENT_STREAM",
-                            type: item.type.toUpperCase(),
-                            actor: item.user,
-                            repo: item.repo,
-                            timestamp: new Date(item.time * 1000).toISOString(),
-                            ...extData
-                        };
+                    this.humGain.gain.setTargetAtTime(0.005, this.ctx.currentTime, 0.5);
+                } else {
+                    if (this.humGain) {
+                        this.humGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.2);
                     }
-
-                    const jsonStr = JSON.stringify(displayObj, null, 2);
-                    const lines = jsonStr.split('\n');
-
-                    for (const line of lines) {
-                        if (currentTheme !== item.theme || !isSplitMode) break; 
-                        const lineEl = document.createElement('div');
-                        lineEl.className = 'cli-line';
-                        detailContainer.appendChild(lineEl);
-
-                        const tokens = line.match(/("(?:\\.|[^\\"])*"(?::)?|\b\d+\b|\b(true|false|null)\b|[\[\]{},:]|\s+)/g) || [line];
-                        for (const token of tokens) {
-                            const span = document.createElement('span');
-                            span.textContent = token;
-                            if (token.endsWith(':')) span.className = 'json-key';
-                            else if (token.startsWith('"')) {
-                                if(token.includes('BTC') || token.includes('Hash') || token.includes('SHA') || token.includes('EVENT')) span.className = 'json-special';
-                                else span.className = 'json-string';
-                            } else if (/^\d+$/.test(token)) span.className = 'json-number';
-                            else if (/^true|false|null$/.test(token)) span.className = 'json-bool';
-                            
-                            lineEl.appendChild(span);
-                            detailContainer.scrollTop = detailContainer.scrollHeight;
-                            const isSpace = /^\s+$/.test(token);
-                            await new Promise(r => setTimeout(r, isSpace ? 5 : Math.random() * 30 + 20));
-                        }
-                        await new Promise(r => setTimeout(r, 10));
-                    }
-                    await new Promise(r => setTimeout(r, Math.random() * 1000 + 1000));
                 }
-            } else {
-                await new Promise(r => setTimeout(r, 500));
+            },
+            play: function(type) {
+                if (!this.enabled || !this.ctx) return;
+                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                const now = this.ctx.currentTime;
+                if (type === 'click') {
+                    osc.type = 'square'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+                    gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05); osc.start(now); osc.stop(now + 0.05);
+                } else if (type === 'alert') {
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(100, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3);
+                } else if (type === 'blip') {
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(1200, now);
+                    gain.gain.setValueAtTime(0.03, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.03); osc.start(now); osc.stop(now + 0.03);
+                }
             }
-            runDisplayLoop();
+        };
+
+        // === TOGGLE FUNCTIONS ===
+        let isCRT = false;
+        function toggleCRT() {
+            isCRT = !isCRT; const btn = document.getElementById('btn-crt');
+            if (isCRT) { 
+                document.body.classList.add('crt'); 
+                btn.innerText = "[CRT]"; 
+                btn.classList.add('active');
+            } else { 
+                document.body.classList.remove('crt'); 
+                btn.innerText = "[none]"; 
+                btn.classList.remove('active'); 
+            }
+            SoundFX.play('blip');
+            SoundFX.toggleHum(isCRT);
         }
 
+        function toggleSound() {
+            const btn = document.getElementById('btn-sound');
+            if (!SoundFX.enabled) { 
+                SoundFX.init(); 
+                SoundFX.enabled = true; 
+                btn.innerText = "[beep]"; 
+                btn.classList.add('active'); 
+                SoundFX.play('click'); 
+                if(isCRT) SoundFX.toggleHum(true);
+            } else { 
+                SoundFX.enabled = false; 
+                btn.innerText = "[muted]"; 
+                btn.classList.remove('active');
+                SoundFX.toggleHum(false);
+            }
+        }
+        function toggleScreen() {
+            const btn = document.getElementById('btn-screen');
+            if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(err => {}); btn.innerText = "[fullscreen]"; btn.classList.add('active');
+            } else { if (document.exitFullscreen) document.exitFullscreen(); btn.innerText = "[windowed]"; btn.classList.remove('active'); }
+            SoundFX.play('blip');
+        }
+        document.addEventListener("fullscreenchange", () => {
+             const btn = document.getElementById('btn-screen');
+             if (!document.fullscreenElement) { btn.innerText = "[windowed]"; btn.classList.remove('active'); }
+        });
+
+        // === LOGIC ===
+        const targetInput = document.getElementById('target-input');
+        const monitorDisplay = document.getElementById('monitor-value');
+        const pingStatDisplay = document.getElementById('ping-stat');
+        const resetBtn = document.getElementById('reset-btn');
+        const rttGraphContainer = document.getElementById('rtt-graph-container');
+        const rttCanvas = document.getElementById('rtt-canvas');
+        const ctx = rttCanvas.getContext('2d');
+        let rttData = new Array(60).fill(0); 
+        let targetMode = 'localhost'; let pingInterval = null; let unixFormat = 'dec'; 
+        
+        function toggleUnixFormat() {
+            if (unixFormat === 'dec') unixFormat = 'hex'; else if (unixFormat === 'hex') unixFormat = 'bin'; else unixFormat = 'dec';
+            const btn = document.getElementById('unix-fmt-btn'); btn.innerText = `[${unixFormat.toUpperCase()}]`; SoundFX.play('blip'); updateTime(); 
+        }
+
+        targetInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                SoundFX.play('click'); const val = targetInput.value.trim();
+                if (val && val !== 'localhost') { startRemoteMode(val); } else { resetTarget(); } targetInput.blur(); 
+            }
+        });
+
+        function resetTarget() {
+            targetMode = 'localhost'; targetInput.value = 'localhost'; resetBtn.style.display = 'none'; pingStatDisplay.innerText = ''; monitorDisplay.style.color = ''; rttGraphContainer.style.display = 'none'; rttData.fill(0); 
+            if (pingInterval) clearInterval(pingInterval); pingInterval = null;
+        }
+
+        function startRemoteMode(url) {
+            targetMode = 'remote'; resetBtn.style.display = 'inline-block'; pingStatDisplay.innerText = "INITIALIZING LINK..."; rttGraphContainer.style.display = 'block'; resizeCanvas(); 
+            if (!url.startsWith('http')) url = 'https://' + url; runPing(url);
+            if (pingInterval) clearInterval(pingInterval); pingInterval = setInterval(() => runPing(url), 2000);
+        }
+
+        function resizeCanvas() {
+            const parent = rttGraphContainer; rttCanvas.width = parent.clientWidth; rttCanvas.height = parent.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawRttGraph() {
+            if (rttGraphContainer.style.display === 'none') return;
+            const width = rttCanvas.width; const height = rttCanvas.height; ctx.clearRect(0, 0, width, height);
+            const style = getComputedStyle(document.body); const accentColor = style.getPropertyValue('--accent-color').trim(); const dimColor = style.getPropertyValue('--dim-color').trim();
+            ctx.strokeStyle = dimColor; ctx.lineWidth = 1; ctx.beginPath();
+            for(let i=0; i<width; i+=20) { ctx.moveTo(i, 0); ctx.lineTo(i, height); } for(let i=0; i<height; i+=20) { ctx.moveTo(0, i); ctx.lineTo(width, i); } ctx.stroke();
+            const maxVal = Math.max(200, ...rttData); const stepX = width / (rttData.length - 1);
+            ctx.beginPath(); ctx.moveTo(0, height);
+            rttData.forEach((val, i) => { const x = i * stepX; const normalized = Math.min(val / maxVal, 1.0); const y = height - (normalized * height); ctx.lineTo(x, y); });
+            ctx.lineTo(width, height); ctx.closePath();
+            ctx.fillStyle = accentColor; ctx.globalAlpha = 0.2; ctx.fill(); ctx.globalAlpha = 1.0;
+            ctx.beginPath();
+            rttData.forEach((val, i) => { const x = i * stepX; const normalized = Math.min(val / maxVal, 1.0); const y = height - (normalized * height); if (i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+            ctx.strokeStyle = accentColor; ctx.lineWidth = 2; ctx.stroke();
+        }
+
+        async function runPing(url) {
+            const start = performance.now(); let latency = 0;
+            try {
+                const fetchUrl = url.includes('?') ? url + `&t=${Date.now()}` : url + `?t=${Date.now()}`;
+                await fetch(fetchUrl, { mode: 'no-cors', cache: 'no-store', method: 'GET' });
+                const end = performance.now(); latency = (end - start).toFixed(0);
+                const seq = Date.now().toString().slice(-4);
+                pingStatDisplay.innerHTML = `RTT: ${latency}ms <span style="font-size:0.8em; opacity:0.5;">(SEQ: ${seq})</span>`;
+                if (latency > 500) { pingStatDisplay.style.color = "#f00"; SoundFX.play('alert'); } else { pingStatDisplay.style.color = "var(--accent-color)"; SoundFX.play('blip'); }
+                monitorDisplay.style.color = 'var(--accent-color)';
+            } catch (e) { latency = 0; pingStatDisplay.innerText = "CONNECTION TIMEOUT"; pingStatDisplay.style.color = "#f00"; monitorDisplay.style.color = "#f00"; SoundFX.play('alert'); }
+            rttData.push(parseInt(latency)); rttData.shift(); drawRttGraph();
+        }
+
+        function updateTime() {
+            const now = new Date(); const pad = (n) => String(n).padStart(2, '0');
+            const timeString = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+            if (targetMode === 'localhost') { monitorDisplay.innerHTML = timeString; } else { const ms = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, '0'); monitorDisplay.innerHTML = `${timeString}<span style="font-size:0.5em; opacity:0.7;">.${ms}</span>`; }
+            document.getElementById('utc').innerText = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
+            
+            const unixSec = Math.floor(now.getTime() / 1000); const unixEl = document.getElementById('unix');
+            // DYNAMIC TITLE
+            document.title = `${unixSec} | 1970.one`;
+
+            if (unixFormat === 'dec') { unixEl.style.fontSize = ''; unixEl.innerText = unixSec; } else if (unixFormat === 'hex') { let hex = unixSec.toString(16).toUpperCase().padStart(8, '0'); hex = hex.match(/.{1,2}/g).join(' '); unixEl.style.fontSize = 'clamp(2rem, 5vw, 4rem)'; unixEl.innerHTML = `<span style="opacity:0.6; font-size:0.5em; vertical-align:middle; margin-right:8px;">0x</span>${hex}`; } else if (unixFormat === 'bin') { let bin = unixSec.toString(2).padStart(32, '0'); let spaced = bin.match(/.{1,4}/g).join(' '); let part1 = spaced.substring(0, 19); let part2 = spaced.substring(20); unixEl.style.fontSize = 'clamp(1.1rem, 3.5vw, 2.2rem)'; unixEl.innerHTML = `<div style="display:flex; align-items:center; justify-content:flex-start;"><span style="opacity:0.6; font-size:0.5em; margin-right:10px; margin-top:-5px;">0b</span><div style="text-align:left; line-height:1.1; letter-spacing:1px;">${part1}<br>${part2}</div></div>`; }
+            const localDate = now.getDate(); const utcDate = now.getUTCDate(); let diffTag = (localDate !== utcDate) ? (now.getTimezoneOffset() > 0 ? "(+D)" : "(-D)") : ""; document.getElementById('utc-diff').innerText = diffTag;
+            const target = new Date(Date.UTC(2038, 0, 19, 3, 14, 7)); let diff = target - now; let seconds = Math.floor(diff / 1000); let minutes = Math.floor(seconds / 60); let hours = Math.floor(minutes / 60); let days = Math.floor(hours / 24); let years = Math.floor(days / 365); days %= 365; hours %= 24; minutes %= 60; seconds %= 60; document.getElementById('y2k38-countdown').innerText = `${years}y ${pad(days)}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s until Y2K38`;
+        }
+        setInterval(updateTime, 50); updateTime();
+
+        // === STREAM LOGIC ===
+        const listContainer = document.getElementById('list-container'); const detailContainer = document.getElementById('detail-container'); const statusIndicator = document.getElementById('status-indicator'); const streamTitle = document.getElementById('stream-title'); const payloadTitle = document.getElementById('payload-title'); const wikiLangToggle = document.getElementById('wiki-lang-toggle');
+        let currentTheme = null; let isSplitMode = false; let eventQueue = []; let stagingQueue = []; const maxLogs = 20; let isRefilling = false; let wikiSource = null; let btcSocket = null; let simInterval = null; let priceInterval = null; let displayLoopRunning = false; let isWikiEnglishOnly = false; let btcPrice = 0; let lastGithubFetchTime = 0; let isIdle = false; let idleTimer = null; const IDLE_TIMEOUT = 10 * 60 * 1000; 
+        
+        function resetIdleTimer() { if (isIdle) { isIdle = false; updateStatus('live'); if(isSplitMode) checkRefillNeeded(); } clearTimeout(idleTimer); idleTimer = setTimeout(() => { isIdle = true; if(isSplitMode) updateStatus('idle'); }, IDLE_TIMEOUT); }
+        ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'].forEach(evt => { window.addEventListener(evt, resetIdleTimer); }); resetIdleTimer();
+        
+        function toggleMode(targetTheme) { SoundFX.play('blip'); if (isSplitMode && currentTheme === targetTheme) { closeSplitMode(); } else { openSplitMode(targetTheme); } }
+        function closeSplitMode() { isSplitMode = false; document.body.classList.remove('mode-split'); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active')); stopAllStreams(); eventQueue = []; stagingQueue = []; currentTheme = null; wikiLangToggle.classList.remove('visible'); }
+        
+        function openSplitMode(theme) { 
+            isSplitMode = true; 
+            document.body.classList.add('mode-split'); 
+            switchTheme(theme); 
+        }
+
+        function toggleWikiLang() { isWikiEnglishOnly = !isWikiEnglishOnly; if(isWikiEnglishOnly) { wikiLangToggle.innerText = "[ EN ONLY ]"; wikiLangToggle.classList.add('active'); } else { wikiLangToggle.innerText = "[ GLOBAL ]"; wikiLangToggle.classList.remove('active'); } eventQueue = []; stagingQueue = []; stopAllStreams(); checkRefillNeeded(); SoundFX.play('blip'); }
+        function switchTheme(theme) { if(currentTheme === theme) return; stopAllStreams(); eventQueue = []; stagingQueue = []; detailContainer.innerHTML = ''; listContainer.innerHTML = ''; document.body.className = `theme-${theme} mode-split`; if(isCRT) document.body.classList.add('crt'); document.querySelectorAll('.nav-btn').forEach(btn => { if(btn.innerText.toLowerCase().includes(theme)) btn.classList.add('active'); else btn.classList.remove('active'); }); currentTheme = theme; wikiLangToggle.classList.remove('visible'); if (theme === 'wiki') { streamTitle.innerText = "> EVENT STREAM (WIKIPEDIA)"; payloadTitle.innerText = "> REVISED ARTICLE"; wikiLangToggle.classList.add('visible'); checkRefillNeeded(); } else if (theme === 'btc') { updateBtcPrice(); priceInterval = setInterval(updateBtcPrice, 15000); streamTitle.innerText = "> MEMPOOL TRANSACTIONS (LOADING...)"; payloadTitle.innerText = "> INCOMING PACKET PAYLOAD"; startBtcStream(); } else if (theme === 'github') { streamTitle.innerText = "> REPOSITORY EVENTS (GITHUB)"; payloadTitle.innerText = "> INCOMING PACKET PAYLOAD"; checkRefillNeeded(); } if(!displayLoopRunning) { displayLoopRunning = true; runDisplayLoop(); } }
+        function stopAllStreams() { if(wikiSource) { wikiSource.close(); wikiSource = null; } if(btcSocket) { btcSocket.close(); btcSocket = null; } if(simInterval) { clearInterval(simInterval); simInterval = null; } if(priceInterval) { clearInterval(priceInterval); priceInterval = null; } isRefilling = false; statusIndicator.innerText = "● IDLE"; statusIndicator.className = "live-indicator"; statusIndicator.style.opacity = "1"; statusIndicator.style.color = ""; }
+        function updateStatus(state) { statusIndicator.className = "live-indicator"; statusIndicator.style.opacity = "1"; statusIndicator.style.color = ""; if (state === 'live') { statusIndicator.innerText = "● LIVE"; if(simInterval) { clearInterval(simInterval); simInterval = null; } } else if (state === 'idle') { statusIndicator.innerText = "● LOW BANDWIDTH"; statusIndicator.style.opacity = "0.7"; statusIndicator.style.color = "var(--text-color)"; } else if (state === 'refill') { statusIndicator.innerText = "● RECEIVING TRANSMISSION"; statusIndicator.classList.add('refill'); } else if (state === 'sim') { statusIndicator.innerText = "● OFFLINE (SIM)"; statusIndicator.style.color = "#fa0"; } }
+        function generateSimData(theme) { const now = Math.floor(Date.now() / 1000); if (theme === 'wiki') return { theme: 'wiki', is_sim: true, title: "Simulation_Theory_" + Math.floor(Math.random()*1000), user: "Sim_User", time: now, summary: "The simulation hypothesis proposes that all of reality, including the Earth and the universe, is in fact an artificial simulation.", raw: {}, lang: 'EN' }; else if (theme === 'btc') return { theme: 'btc', is_sim: true, hash: Array(64).fill(0).map(()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join(''), btc: (Math.random()*5).toFixed(8), time: now, raw: { hash: "simulated_hash", inputs: [], out: [] }, price_snapshot: 98500.00 }; else if (theme === 'github') return { theme: 'github', is_sim: true, repo: "simulation/offline-repo", type: "PushEvent", user: "Sim_Coder", time: now, raw: { type: "PushEvent", repo: {name: "offline"}, payload: { commits: [{message: "Simulated Commit Message for Idle Mode"}] } } }; return null; }
+        function checkRefillNeeded() { if (!isSplitMode || isRefilling) return; if (eventQueue.length < 3 && stagingQueue.length > 0) { while(stagingQueue.length > 0) eventQueue.push(stagingQueue.shift()); } const totalItems = eventQueue.length + stagingQueue.length; if (isIdle) { if (totalItems < 2) { if (Math.random() < 0.8) { const simItem = generateSimData(currentTheme); if (simItem) { stagingQueue.push(simItem); if(eventQueue.length === 0) eventQueue.push(stagingQueue.shift()); } return; } } else { return; } } if (currentTheme === 'wiki' && totalItems < 10) fetchWikiBatch(); else if (currentTheme === 'github') { const now = Date.now(); if (totalItems === 0 || (now - lastGithubFetchTime > 300000)) fetchGithubBatch(); } }
+        function fetchWikiBatch() { if (!navigator.onLine) { startSimulation('wiki'); return; } isRefilling = true; updateStatus(isIdle ? 'idle' : 'refill'); wikiSource = new EventSource('https://stream.wikimedia.org/v2/stream/recentchange'); let batchCount = 0; const BATCH_TARGET = 15; wikiSource.onmessage = async (e) => { if(!isSplitMode || currentTheme !== 'wiki') { wikiSource.close(); return; } const data = JSON.parse(e.data); let isValid = false; if (data.namespace === 0 && (data.type === 'edit' || data.type === 'new')) { if (isWikiEnglishOnly) { if (data.server_name === 'en.wikipedia.org') isValid = true; } else { if (data.server_name.endsWith('wikipedia.org')) isValid = true; } } if (isValid) { batchCount++; if(batchCount >= BATCH_TARGET) { wikiSource.close(); wikiSource = null; isRefilling = false; updateStatus(isIdle ? 'idle' : 'live'); if(eventQueue.length === 0) while(stagingQueue.length > 0) eventQueue.push(stagingQueue.shift()); } try { const summaryRes = await fetch(`https://${data.server_name}/api/rest_v1/page/summary/${encodeURIComponent(data.title)}`); let extract = null; if(summaryRes.ok) { const summaryJson = await summaryRes.json(); extract = summaryJson.extract; } if (!extract) extract = data.comment ? `[Comment] ${data.comment}` : `(No summary available)`; if (extract) stagingQueue.push({ theme: 'wiki', title: data.title, user: data.user, url: data.server_url + '/wiki/' + encodeURIComponent(data.title), time: data.timestamp, summary: extract, raw: data, lang: data.server_name.split('.')[0].toUpperCase() }); } catch(err) { stagingQueue.push({ theme: 'wiki', title: data.title, user: data.user, url: data.server_url + '/wiki/' + encodeURIComponent(data.title), time: data.timestamp, summary: `[${data.server_name}] Transmission received.`, raw: data, lang: data.server_name.split('.')[0].toUpperCase() }); } } }; wikiSource.onerror = () => { if(isSplitMode && currentTheme === 'wiki') { wikiSource.close(); startSimulation('wiki'); } isRefilling = false; }; }
+        async function fetchGithubBatch() { if (currentTheme !== 'github' || !isSplitMode) return; if (!navigator.onLine) { startSimulation('github'); return; } isRefilling = true; updateStatus(isIdle ? 'idle' : 'refill'); try { const res = await fetch('https://api.github.com/events?per_page=100', { cache: 'no-store' }); lastGithubFetchTime = Date.now(); if (res.status === 403 || res.status === 429) { startSimulation('github', true); isRefilling = false; return; } const events = await res.json(); for (const evt of events) { stagingQueue.push({ theme: 'github', repo: evt.repo.name, type: evt.type, user: evt.actor.login, url: `https://github.com/${evt.repo.name}`, time: new Date(evt.created_at).getTime() / 1000, raw: evt }); } while(stagingQueue.length > 0) eventQueue.push(stagingQueue.shift()); isRefilling = false; updateStatus(isIdle ? 'idle' : 'live'); } catch (e) { if(isSplitMode) startSimulation('github'); isRefilling = false; } }
+        async function updateBtcPrice() { try { const res = await fetch('https://blockchain.info/ticker'); const data = await res.json(); btcPrice = data.USD.last; } catch(e) { } }
+        function startBtcStream() { if (!navigator.onLine) { startSimulation('btc'); return; } btcSocket = new WebSocket("wss://ws.blockchain.info/inv"); btcSocket.onopen = () => { updateStatus('live'); btcSocket.send(JSON.stringify({ "op": "unconfirmed_sub" })); }; btcSocket.onmessage = (msg) => { if(!isSplitMode || currentTheme !== 'btc') { btcSocket.close(); return; } const response = JSON.parse(msg.data); if (response.op === "utx") { const tx = response.x; let totalSats = 0; if (tx.out) tx.out.forEach(o => totalSats += o.value); eventQueue.push({ theme: 'btc', hash: tx.hash, btc: (totalSats / 100000000).toFixed(8), url: `https://www.blockchain.com/btc/tx/${tx.hash}`, time: tx.time, raw: tx, price_snapshot: btcPrice }); } }; btcSocket.onerror = () => { if(isSplitMode) { btcSocket.close(); startSimulation('btc'); } }; }
+        function startSimulation(theme, isLimit = false) { if (simInterval || !isSplitMode) return; updateStatus('sim'); simInterval = setInterval(() => { if(!isSplitMode) return; const item = generateSimData(theme); if(item) eventQueue.push(item); }, 2000); }
+        function truncate(str, len) { if (!str) return ''; return str.length > len ? str.substring(0, len) + "..." : str; }
+        function renderTopList(item) { const div = document.createElement('div'); div.className = 'log-item'; const now = new Date(); const pad = (n) => String(n).padStart(2, '0'); const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`; const makeLink = (text, url) => { if (item.is_sim) return `<span class="log-sim-link">${text}</span>`; else return `<a href="${url}" target="_blank" class="log-highlight">${text}</a>`; }; let contentHtml = ''; if (item.theme === 'wiki') { const langTag = `<span style="color:var(--accent-color); font-weight:bold; font-size:0.8em; margin-right:5px;">[${item.lang || 'GLOBAL'}]</span>`; contentHtml = `${langTag}${item.user} @ ${makeLink(truncate(item.title, 35), item.url)}`; } else if (item.theme === 'btc') { const refPrice = item.price_snapshot || btcPrice; const usdVal = (parseFloat(item.btc) * refPrice).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); contentHtml = `TX: ${makeLink(truncate(item.hash, 12), item.url)} <span style="color:var(--text-color)">(${item.btc} BTC / ${usdVal} USD)</span>`; } else if (item.theme === 'github') { let badge = ''; const p = item.raw.payload; if (item.type === 'PushEvent' && p.head) badge = p.head.substring(0, 7); else if (item.type === 'WatchEvent') badge = '★STAR'; else if (item.type === 'ForkEvent') badge = '⑂FORK'; else if (p.issue) badge = '#' + p.issue.number; else if (p.pull_request) badge = 'PR#' + p.pull_request.number; else badge = 'ACTION'; const stats = `<span class="log-stat">${badge}</span>`; contentHtml = `${stats}[${item.type}] ${item.user} @ ${makeLink(truncate(item.repo, 30), item.url)}`; } div.innerHTML = `<span class="log-time">${timeStr}</span>${contentHtml}`; listContainer.insertBefore(div, listContainer.firstChild); if (listContainer.children.length > maxLogs) listContainer.removeChild(listContainer.lastChild); SoundFX.play('click'); }
+        async function runDisplayLoop() { if (!displayLoopRunning) return; if (eventQueue.length < 3 && stagingQueue.length > 0) { while(stagingQueue.length > 0) eventQueue.push(stagingQueue.shift()); } if (isSplitMode && !isRefilling) checkRefillNeeded(); if (isSplitMode && eventQueue.length > 0) { const item = eventQueue.shift(); renderTopList(item); detailContainer.innerHTML = ''; if (item.theme === 'wiki') { const header = document.createElement('div'); header.style.marginBottom = '15px'; header.innerHTML = `<span style="color:var(--accent-color); font-weight:bold;">[${item.lang || 'GL'}] TITLE: ${item.title}</span><br><span style="opacity:0.6; font-size:0.8em">URL: ${item.url}</span>`; detailContainer.appendChild(header); const textDiv = document.createElement('div'); textDiv.className = 'wiki-text'; detailContainer.appendChild(textDiv); const words = (item.summary || "No summary available.").split(" "); for(const word of words) { if (!isSplitMode || currentTheme !== 'wiki') break; textDiv.textContent += word + " "; await new Promise(r => setTimeout(r, Math.random() * 30 + 50)); } await new Promise(r => setTimeout(r, 2000)); } else { let displayObj = {}; if (item.theme === 'btc') { const refPrice = item.price_snapshot || btcPrice; streamTitle.innerText = `> MEMPOOL TRANSACTIONS (${refPrice.toLocaleString()} USD/BTC)`; displayObj = { type: 'btc_tx', hash: item.hash, value: item.btc + " BTC", usd_price_ref: refPrice, size: item.raw.size, relayed: item.raw.relayed_by }; } else if (item.theme === 'github') { const p = item.raw.payload; let extData = {}; if (item.type === 'PushEvent') { extData = { branch: p.ref ? p.ref.replace('refs/heads/', '') : 'unknown', commit_msg: p.commits && p.commits.length > 0 ? p.commits[0].message : "Merge branch...", size: p.size, head_sha: p.head ? p.head.substring(0, 7) : "unknown" }; } else if (item.type === 'IssuesEvent') { extData = { action: p.action, issue_title: p.issue.title, url: p.issue.html_url }; } else if (item.type === 'PullRequestEvent') { extData = { action: p.action, pr_title: p.pull_request.title, state: p.pull_request.state, merged: p.pull_request.merged }; } else if (item.type === 'WatchEvent') { extData = { action: 'star_added', description: "User starred this repository" }; } else if (item.type === 'ForkEvent') { extData = { forkee: p.forkee.full_name, url: p.forkee.html_url }; } else if (item.type === 'CreateEvent') { extData = { ref_type: p.ref_type, ref: p.ref || 'repository', description: p.description || "New creation" }; } displayObj = { source: "GITHUB_EVENT_STREAM", type: item.type.toUpperCase(), actor: item.user, repo: item.repo, timestamp: new Date(item.time * 1000).toISOString(), ...extData }; } const jsonStr = JSON.stringify(displayObj, null, 2); const lines = jsonStr.split('\n'); for (const line of lines) { if (currentTheme !== item.theme || !isSplitMode) break; const lineEl = document.createElement('div'); lineEl.className = 'cli-line'; detailContainer.appendChild(lineEl); const tokens = line.match(/("(?:\\.|[^\\"])*"(?::)?|\b\d+\b|\b(true|false|null)\b|[\[\]{},:]|\s+)/g) || [line]; for (const token of tokens) { const span = document.createElement('span'); span.textContent = token; if (token.endsWith(':')) span.className = 'json-key'; else if (token.startsWith('"')) { if(token.includes('BTC') || token.includes('Hash') || token.includes('SHA') || token.includes('EVENT')) span.className = 'json-special'; else span.className = 'json-string'; } else if (/^\d+$/.test(token)) span.className = 'json-number'; else if (/^true|false|null$/.test(token)) span.className = 'json-bool'; lineEl.appendChild(span); detailContainer.scrollTop = detailContainer.scrollHeight; const isSpace = /^\s+$/.test(token); await new Promise(r => setTimeout(r, isSpace ? 5 : Math.random() * 30 + 20)); } await new Promise(r => setTimeout(r, 10)); } await new Promise(r => setTimeout(r, Math.random() * 1000 + 1000)); } } else { await new Promise(r => setTimeout(r, 500)); } runDisplayLoop(); }
         window.addEventListener('offline', () => { if(isSplitMode) startSimulation(currentTheme); });
         window.addEventListener('online', () => { window.location.reload(); });
+
+        // [NEW] CINEMATIC BOOT LOGIC
+        function startCinematicBoot() {
+            // 1. Force open Split Mode without a specific network theme
+            isSplitMode = true;
+            document.body.classList.add('mode-split');
+            currentTheme = 'boot'; // Placeholder theme to prevent network fetch
+            
+            const bootLogs = [
+                "KERNEL: Initializing memory mapping...",
+                "CPU0: Microcode updated early to revision 0x2a",
+                "NET: Registered protocol family 2 (AF_INET)",
+                "MOUNT: /dev/sda1 mounted on / (ext4) read-only",
+                "TIME: Synchronizing with hardware clock...",
+                "SYSTEM: 1970.one daemon started (PID 1)",
+                "READY: Standby mode active."
+            ];
+
+            const container = document.getElementById('list-container');
+            container.innerHTML = ''; // Ensure clean slate
+            
+            let totalDelay = 0;
+
+            // 2. Schedule logs with random delays
+            bootLogs.forEach((log) => {
+                // Random delay between 400ms and 1000ms
+                const step = Math.floor(Math.random() * 600) + 400;
+                totalDelay += step;
+
+                setTimeout(() => {
+                    const div = document.createElement('div');
+                    div.className = 'log-item';
+                    div.style.fontFamily = "'Courier New', monospace";
+                    div.innerHTML = `<span class="log-time">BOOT</span><span style="color:var(--text-color)">${log}</span>`;
+                    
+                    // Append for "Terminal" feel (Top to Bottom) during boot
+                    container.appendChild(div);
+                    container.scrollTop = container.scrollHeight; 
+                    
+                    SoundFX.play('click');
+                }, totalDelay);
+            });
+
+            // 3. Auto Close after 5 seconds from the last log
+            setTimeout(() => {
+                closeSplitMode();
+                
+                // Clear the logs after the CSS transition (0.5s) finishes
+                setTimeout(() => {
+                    container.innerHTML = '';
+                    currentTheme = null;
+                }, 600);
+
+            }, totalDelay + 5000);
+        }
+
+        // Start the Cinematic Boot Sequence immediately on load
+        startCinematicBoot();
 
     </script>
 </body>
