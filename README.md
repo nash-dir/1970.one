@@ -1,20 +1,23 @@
-# 1970.one _ The Origin of Time
+# 1970.one
 
-> **"Time is the only true unit of measure."**
+**1970.one** is a Unix Epoch-themed dashboard designed for idle display. It visualizes global digital events in a retro-terminal interface, optimized for long-running sessions without exhausting API quotas.
 
-**1970.one** is a minimalist, cyberpunk-styled dashboard that pays homage to the Unix Epoch. It visualizes the flow of "digital time" through real-time global event streams.
+### Architecture & Optimization
+To ensure stability and minimize load on public APIs, this project implements a **Cloudflare Worker fan-out architecture** rather than direct client-side connections.
 
-### Live Streams
-It captures the heartbeat of the internet across three dimensions:
-- **Knowledge:** Wikipedia Recent Changes (The flow of information)
-- **Value:** Bitcoin Mempool Transactions (The flow of money)
-- **Code:** GitHub Event Stream (The flow of creation)
+- **Buffered Polling:** Workers fetch and cache data streams (Wiki, GitHub, BTC) every 5 minutes, serving efficient batches to clients.
+- **State Persistence:** Implements client-side state management to preserve data queues and handle tab switching gracefully.
+- **Network Monitoring:** Includes a real-time **RTT (Round Trip Time)** graph to visualize latency between the client and the edge worker.
+
+### Data Sources
+- **Wikipedia:** Global recent changes stream.
+- **Bitcoin:** Mempool transactions (focusing on raw on-chain metrics like vSize, Sats, and Fees).
+- **GitHub:** Public event stream (Commits, PRs, Issues).
 
 ### Features
-- **Precision Clock:** Local, UTC, and raw Unix Timestamp display.
-- **Y2K38 Countdown:** Calculating the remaining time until the 32-bit integer overflow.
-- **Terminal UI:** A retro-futuristic CLI interface with distinct themes for each stream.
-- **No-Backend:** Built entirely with Vanilla JS, utilizing EventSource and WebSockets.
+- **Unix Clock:** Live Unix Timestamp (Dec/Hex/Bin) and UTC/Local time display.
+- **Y2K38 Countdown:** Tracking the 32-bit integer overflow horizon.
+- **Retro UI:** Optional CRT visual effects and typing sounds.
 
 ---
 
