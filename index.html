@@ -694,6 +694,32 @@
         let displayLoopRunning = false;
         let btcPrice = 98500.00;
 
+        let isWikiEnglishOnly = false;
+
+        function toggleWikiLang() {
+            isWikiEnglishOnly = !isWikiEnglishOnly;
+
+            // UI Update
+            const btn = document.getElementById('wiki-lang-toggle');
+            if (isWikiEnglishOnly) {
+                btn.innerText = "[ EN ONLY ]";
+                btn.classList.add('active');
+            } else {
+                btn.innerText = "[ GLOBAL ]";
+                btn.classList.remove('active');
+            }
+
+            // Logic: Flush existing queues to force immediate fetch with new language param
+            const store = stores.wiki;
+            store.eventQueue = [];
+            store.stagingQueue = [];
+            store.processedIds.clear(); // Clear dedup cache to allow fresh events
+            store.lastFetch = 0; // Reset timer to trigger immediate fetch
+
+            checkRefillNeeded();
+            SoundFX.play('blip');
+        }
+
         // Idle Detection
         let isIdle = false;
         let idleTimer = null;
@@ -742,22 +768,47 @@
             },
             play: function (type) {
                 if (!this.enabled || !this.ctx) return;
-                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
-                osc.connect(gain); gain.connect(this.ctx.destination);
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                // 마스터 볼륨과 연결되지 않도록 안전장치 (필요 시)
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
                 const now = this.ctx.currentTime;
+
                 if (type === 'click') {
-                    osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
-                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
-                    gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                    osc.start(now); osc.stop(now + 0.05);
+                    osc.type = 'triangle';
+
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(50, now + 0.04);
+
+                    gain.gain.setValueAtTime(0.04, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+                    osc.start(now);
+                    osc.stop(now + 0.04);
+
                 } else if (type === 'alert') {
-                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now);
-                    gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
-                    osc.start(now); osc.stop(now + 0.3);
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(100, now);
+                    osc.frequency.linearRampToValueAtTime(80, now + 0.2);
+
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+
                 } else if (type === 'blip') {
-                    osc.type = 'sine'; osc.frequency.setValueAtTime(1200, now);
-                    gain.gain.setValueAtTime(0.03, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
-                    osc.start(now); osc.stop(now + 0.03);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+
+                    gain.gain.setValueAtTime(0.03, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+
+                    osc.start(now);
+                    osc.stop(now + 0.05);
                 }
             }
         };
@@ -825,8 +876,17 @@
             if (unixFormat === 'dec') unixEl.innerText = unixSec;
             else if (unixFormat === 'hex') unixEl.innerHTML = `<span style="opacity:0.6;font-size:0.5em;margin-right:8px;">0x</span>${unixSec.toString(16).toUpperCase().match(/.{1,2}/g).join(' ')}`;
             else if (unixFormat === 'bin') {
-                let bin = unixSec.toString(2).padStart(32, '0').match(/.{1,4}/g).join(' ');
-                unixEl.innerHTML = `<div style="font-size:0.5em;line-height:1.2;">${bin.substring(0, 24)}<br>${bin.substring(25)}</div>`;
+                const rawBin = unixSec.toString(2).padStart(32, '0');
+                // Split into upper/lower 16 bits, then group by 4 bits (nibbles)
+                const upper = rawBin.slice(0, 16).match(/.{1,4}/g).join(' ');
+                const lower = rawBin.slice(16).match(/.{1,4}/g).join(' ');
+
+                unixEl.innerHTML = `
+                    <div style="display:flex; flex-direction:column; align-items:flex-start; justify-content:center; 
+                                font-size:0.45em; line-height:1.2; letter-spacing:1px; margin-top:0.2em;">
+                        <span style="opacity:0.8">${upper}</span>
+                        <span style="opacity:1.0">${lower}</span>
+                    </div>`;
             }
 
             const target = 2147483647;
@@ -888,8 +948,22 @@
             document.getElementById('stream-title').innerText = titles[theme][0];
             document.getElementById('payload-title').innerText = titles[theme][1];
 
+            // [FIX] Define the toggle button and sync visibility/state
             const wikiToggle = document.getElementById('wiki-lang-toggle');
+
+            // 1. Show button only for Wiki theme
             wikiToggle.classList.toggle('visible', theme === 'wiki');
+
+            // 2. Sync button text/active state with current isWikiEnglishOnly variable
+            if (theme === 'wiki') {
+                if (isWikiEnglishOnly) {
+                    wikiToggle.innerText = "[ EN ONLY ]";
+                    wikiToggle.classList.add('active');
+                } else {
+                    wikiToggle.innerText = "[ GLOBAL ]";
+                    wikiToggle.classList.remove('active');
+                }
+            }
 
             // Reset refill lock but keep queue data
             isRefilling = false;
@@ -951,7 +1025,12 @@
             const store = stores[theme];
             store.lastFetch = Date.now();
 
-            const url = ENDPOINTS[theme.toUpperCase()];
+            // [FIX] Dynamic URL generation for Wikipedia Language Filter
+            let url = ENDPOINTS[theme.toUpperCase()];
+            if (theme === 'wiki' && isWikiEnglishOnly) {
+                url += "?lang=en";
+            }
+
             if (!url) { isRefilling = false; return; }
 
             try {
