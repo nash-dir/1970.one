@@ -6,10 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>1970.one - The Origin of Time</title>
     <style>
-        /* * [DESIGN SYSTEM]
-         * Defining a centralized color palette and typography system.
-         * We use CSS variables to handle theming dynamically without heavy JS DOM manipulation.
-         */
         :root {
             --bg-color: #000;
             --panel-bg: rgba(0, 20, 0, 0.3);
@@ -462,9 +458,27 @@
             opacity: 0.7;
         }
 
+        .live-indicator.pulse {
+            animation: pulse-warn 2s infinite;
+        }
+
         @keyframes blink {
             50% {
                 opacity: 0;
+            }
+        }
+
+        @keyframes pulse-warn {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+
+            100% {
+                opacity: 1;
             }
         }
 
@@ -665,22 +679,12 @@
     </div>
 
     <script>
-        /**
-         * [CONFIGURATION]
-         * Worker endpoints that provide cached data.
-         */
         const ENDPOINTS = {
             WIKI: "https://1970-wiki.nashdir.workers.dev",
             GITHUB: "https://1970-github.nashdir.workers.dev",
             BTC: "https://1970-btc.nashdir.workers.dev"
         };
 
-        /**
-         * [STATE MANAGEMENT]
-         * We maintain a separate state store for each theme.
-         * This prevents data loss when switching tabs; when a user returns to a theme,
-         * the event queue and processed IDs are preserved, ensuring continuity.
-         */
         const stores = {
             wiki: { eventQueue: [], stagingQueue: [], processedIds: new Set(), lastFetch: 0 },
             btc: { eventQueue: [], stagingQueue: [], processedIds: new Set(), lastFetch: 0 },
@@ -692,14 +696,11 @@
         let isSplitMode = false;
         let isRefilling = false;
         let displayLoopRunning = false;
-        let btcPrice = 98500.00;
-
+        let bootTimeouts = [];
         let isWikiEnglishOnly = false;
 
         function toggleWikiLang() {
             isWikiEnglishOnly = !isWikiEnglishOnly;
-
-            // UI Update
             const btn = document.getElementById('wiki-lang-toggle');
             if (isWikiEnglishOnly) {
                 btn.innerText = "[ EN ONLY ]";
@@ -708,14 +709,11 @@
                 btn.innerText = "[ GLOBAL ]";
                 btn.classList.remove('active');
             }
-
-            // Logic: Flush existing queues to force immediate fetch with new language param
             const store = stores.wiki;
             store.eventQueue = [];
             store.stagingQueue = [];
-            store.processedIds.clear(); // Clear dedup cache to allow fresh events
-            store.lastFetch = 0; // Reset timer to trigger immediate fetch
-
+            store.processedIds.clear();
+            store.lastFetch = 0;
             checkRefillNeeded();
             SoundFX.play('blip');
         }
@@ -771,7 +769,6 @@
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
 
-                // 마스터 볼륨과 연결되지 않도록 안전장치 (필요 시)
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
 
@@ -779,36 +776,24 @@
 
                 if (type === 'click') {
                     osc.type = 'triangle';
-
                     osc.frequency.setValueAtTime(300, now);
                     osc.frequency.exponentialRampToValueAtTime(50, now + 0.04);
-
                     gain.gain.setValueAtTime(0.04, now);
                     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-
-                    osc.start(now);
-                    osc.stop(now + 0.04);
-
+                    osc.start(now); osc.stop(now + 0.04);
                 } else if (type === 'alert') {
                     osc.type = 'sawtooth';
                     osc.frequency.setValueAtTime(100, now);
                     osc.frequency.linearRampToValueAtTime(80, now + 0.2);
-
                     gain.gain.setValueAtTime(0.05, now);
                     gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-
-                    osc.start(now);
-                    osc.stop(now + 0.2);
-
+                    osc.start(now); osc.stop(now + 0.2);
                 } else if (type === 'blip') {
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(600, now);
-
                     gain.gain.setValueAtTime(0.03, now);
                     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-
-                    osc.start(now);
-                    osc.stop(now + 0.05);
+                    osc.start(now); osc.stop(now + 0.05);
                 }
             }
         };
@@ -877,10 +862,8 @@
             else if (unixFormat === 'hex') unixEl.innerHTML = `<span style="opacity:0.6;font-size:0.5em;margin-right:8px;">0x</span>${unixSec.toString(16).toUpperCase().match(/.{1,2}/g).join(' ')}`;
             else if (unixFormat === 'bin') {
                 const rawBin = unixSec.toString(2).padStart(32, '0');
-                // Split into upper/lower 16 bits, then group by 4 bits (nibbles)
                 const upper = rawBin.slice(0, 16).match(/.{1,4}/g).join(' ');
                 const lower = rawBin.slice(16).match(/.{1,4}/g).join(' ');
-
                 unixEl.innerHTML = `
                     <div style="display:flex; flex-direction:column; align-items:flex-start; justify-content:center; 
                                 font-size:0.45em; line-height:1.2; letter-spacing:1px; margin-top:0.2em;">
@@ -900,7 +883,6 @@
         setInterval(updateTime, 50);
 
         // --- CORE LOGIC ---
-
         function resetIdleTimer() {
             if (isIdle) { isIdle = false; updateStatus('live'); if (isSplitMode) checkRefillNeeded(); }
             clearTimeout(idleTimer);
@@ -917,29 +899,30 @@
         function closeSplitMode() {
             isSplitMode = false; document.body.classList.remove('mode-split');
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            // We do NOT clear data queues here; we preserve state for when user returns.
             currentTheme = null;
             document.getElementById('wiki-lang-toggle').classList.remove('visible');
         }
 
         function openSplitMode(theme) {
+            if (currentTheme === 'boot') {
+                bootTimeouts.forEach(t => clearTimeout(t));
+                bootTimeouts = [];
+            }
+
             if (currentTheme === theme && isSplitMode) return;
             isSplitMode = true; document.body.classList.add('mode-split');
 
-            // UI Reset
             document.getElementById('detail-container').innerHTML = '';
             document.getElementById('list-container').innerHTML = '';
             document.body.className = `theme-${theme} mode-split`;
             if (isCRT) document.body.classList.add('crt');
 
-            // Nav Active State
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.innerText.toLowerCase().includes(theme));
             });
 
             currentTheme = theme;
 
-            // Header config
             const titles = {
                 wiki: ["> EVENT STREAM (WIKIPEDIA)", "> REVISED ARTICLE"],
                 btc: ["> MEMPOOL TRANSACTIONS", "> INCOMING PACKET PAYLOAD"],
@@ -948,13 +931,9 @@
             document.getElementById('stream-title').innerText = titles[theme][0];
             document.getElementById('payload-title').innerText = titles[theme][1];
 
-            // [FIX] Define the toggle button and sync visibility/state
             const wikiToggle = document.getElementById('wiki-lang-toggle');
-
-            // 1. Show button only for Wiki theme
             wikiToggle.classList.toggle('visible', theme === 'wiki');
 
-            // 2. Sync button text/active state with current isWikiEnglishOnly variable
             if (theme === 'wiki') {
                 if (isWikiEnglishOnly) {
                     wikiToggle.innerText = "[ EN ONLY ]";
@@ -965,10 +944,7 @@
                 }
             }
 
-            // Reset refill lock but keep queue data
             isRefilling = false;
-
-            // If the queue is empty upon entry, trigger a fetch immediately
             const store = stores[currentTheme];
             if (store.eventQueue.length === 0) {
                 checkRefillNeeded();
@@ -977,13 +953,160 @@
             if (!displayLoopRunning) { displayLoopRunning = true; runDisplayLoop(); }
         }
 
+        /**
+         * Simulation Generators
+         */
+        const GitHubLorem = {
+            vocab: {
+                prefixes: ["dev", "code", "cyber", "net", "sys", "auto", "git", "vim", "rusty", "py", "js", "0x", "neo", "hyper", "void", "null"],
+                nouns: ["ninja", "guru", "bot", "lab", "flow", "stack", "wizard", "runner", "walker", "miner", "ghost", "shell", "core", "daemon"],
+                actions_newbie: ["fix typo", "update readme", "first commit", "test upload", "oops fix", "add comments", "hello world"],
+                actions_pro: ["refactor(core): optimize loop", "feat: add auth middleware", "docs: update api spec", "fix: memory leak in worker", "chore: bump deps"],
+                actions_hacker: ["bypass: waf check", "inject: shellcode payload", "exploit: buffer overflow POC", "privesc: kernel module", "crypto: optimize hashing"],
+                actions_bot: ["[ci] auto build", "[bot] bump version 1.2.x", "[audit] dependencies check", "[deploy] stage to prod"],
+                repos_web: ["react-dashboard", "vue-admin", "nextjs-blog", "api-gateway", "client-sdk", "status-page"],
+                repos_sys: ["linux-kernel-mod", "docker-compose-stack", "k8s-controller", "driver-nvidia-patch", "zsh-theme"],
+                repos_crypto: ["btc-wallet-cracker", "eth-smart-contract", "solana-sniper-bot", "chain-validator", "defi-yield-aggregator"]
+            },
+            personas: [
+                { id: 'newbie', weight: 0.2, type: 'User' },
+                { id: 'pro', weight: 0.5, type: 'User' },
+                { id: 'hacker', weight: 0.15, type: 'User' },
+                { id: 'bot', weight: 0.15, type: 'Bot' }
+            ],
+            randHex: (len) => [...Array(len)].map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
+            pick: (arr) => arr[Math.floor(Math.random() * arr.length)],
+            pickPersona: function () {
+                const r = Math.random(); let sum = 0;
+                for (const p of this.personas) { sum += p.weight; if (r <= sum) return p.id; }
+                return 'pro';
+            },
+            generateUser: function (persona) {
+                const v = this.vocab; const r = Math.random();
+                if (persona === 'bot') return `${this.pick(v.prefixes)}-${this.pick(v.nouns)}[bot]`;
+                if (persona === 'hacker') return r > 0.5 ? `0x${this.randHex(4)}` : `_${this.pick(v.nouns)}_x`;
+                if (persona === 'newbie') return `${this.pick(v.nouns)}${Math.floor(Math.random() * 2024)}`;
+                return `${this.pick(v.prefixes)}${this.pick(v.nouns)}`;
+            },
+            generateRepo: function (persona, user) {
+                const v = this.vocab; let pool = v.repos_web;
+                if (persona === 'hacker') pool = v.repos_crypto;
+                if (persona === 'pro' || persona === 'bot') pool = v.repos_sys.concat(v.repos_web);
+                return `${user}/${this.pick(pool)}`;
+            },
+            generateEvent: function () {
+                const persona = this.pickPersona();
+                const user = this.generateUser(persona);
+                const repo = this.generateRepo(persona, user);
+                const type = this.pick(['PushEvent', 'PushEvent', 'PushEvent', 'CreateEvent', 'PullRequestEvent', 'WatchEvent']);
+                let payload = {};
+
+                if (type === 'PushEvent') {
+                    let msg = "";
+                    switch (persona) {
+                        case 'bot': msg = this.pick(this.vocab.actions_bot); break;
+                        case 'hacker': msg = this.pick(this.vocab.actions_hacker); break;
+                        case 'newbie': msg = this.pick(this.vocab.actions_newbie); break;
+                        default: msg = this.pick(this.vocab.actions_pro); break;
+                    }
+                    payload = { commits: [{ message: msg }] };
+                } else if (type === 'CreateEvent') {
+                    payload = { ref: this.pick(['master', 'main', 'feature/login']), ref_type: "branch", description: "Initial commit" };
+                }
+                const nowSec = Math.floor(Date.now() / 1000);
+                return {
+                    theme: 'github', is_sim: true, type: type, user: user, repo: repo,
+                    url: `https://github.com/${repo}`, time: nowSec,
+                    raw: { type: type, actor: { login: user }, repo: { name: repo }, payload: payload }
+                };
+            }
+        };
+
+        const BTCLorem = {
+            randHex: (len) => [...Array(len)].map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
+            randAmount: () => {
+                const r = Math.random();
+                if (r > 0.99) return (Math.random() * 10 + 1).toFixed(8);
+                if (r > 0.90) return (Math.random() * 0.5 + 0.1).toFixed(8);
+                return (Math.random() * 0.05).toFixed(8);
+            },
+            createEvent: function () {
+                const txid = this.randHex(64);
+                return {
+                    theme: 'btc', is_sim: true, hash: txid, btc: this.randAmount(),
+                    url: `https://mempool.space/tx/${txid}`, time: Math.floor(Date.now() / 1000),
+                    raw: { fee: Math.floor(Math.random() * 500) + 10, vsize: Math.floor(Math.random() * 200) + 140, value_sats: Math.floor(Math.random() * 100000000), relayed_by: Math.random() > 0.5 ? "mempool.space" : "SimNode_v24" }
+                };
+            }
+        };
+
+        const WikiLorem = {
+            vocab: {
+                langs: [
+                    { code: 'en', server: 'en.wikipedia.org', weight: 0.4 },
+                    { code: 'ko', server: 'ko.wikipedia.org', weight: 0.15 },
+                    { code: 'ja', server: 'ja.wikipedia.org', weight: 0.15 },
+                    { code: 'zh', server: 'zh.wikipedia.org', weight: 0.1 },
+                    { code: 'ru', server: 'ru.wikipedia.org', weight: 0.05 },
+                    { code: 'fr', server: 'fr.wikipedia.org', weight: 0.05 }
+                ],
+                titles: {
+                    en: ["Quantum_mechanics", "List_of_HTTP_status_codes", "Taylor_Swift", "Bitcoin", "Artificial_intelligence", "Linux_kernel"],
+                    ko: ["양자역학", "HTTP_상태_코드", "테일러_스위프트", "비트코인", "인공지능", "리눅스_커널"],
+                    ja: ["量子力学", "HTTPステータスコード", "テイラー・スウィフト", "ビットコイン", "人工知能", "Linuxカーネル"],
+                    common: ["User:Sandbox", "Talk:Main_Page", "Category:Living_people", "Template:Cite_web"]
+                },
+                summaries: {
+                    en: ["Fixed typo", "Reverted vandalism", "Updated citations", "Added external links", "Corrected grammar"],
+                    common: ["/* References */", "/* External links */", "/* History */", ""]
+                },
+                users: {
+                    named: ["WikiGnome", "Editor123", "FactChecker", "HistoryBuff", "CitationNeeded"],
+                    bots: ["Dependabot", "ArchiveBot", "ImageBot", "CleanupBot"]
+                }
+            },
+            pick: (arr) => arr[Math.floor(Math.random() * arr.length)],
+            pickWeighted: function (arr) {
+                const r = Math.random(); let sum = 0;
+                for (const item of arr) { sum += item.weight; if (r <= sum) return item; }
+                return arr[0];
+            },
+            generateUser: function () {
+                const r = Math.random();
+                if (r < 0.1) return `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+                if (r < 0.3) return this.pick(this.vocab.users.bots);
+                return this.pick(this.vocab.users.named) + Math.floor(Math.random() * 1000);
+            },
+            createEvent: function () {
+                const langData = this.pickWeighted(this.vocab.langs);
+                const isCommonTitle = Math.random() < 0.2;
+                const titleList = isCommonTitle ? this.vocab.titles.common : (this.vocab.titles[langData.code] || this.vocab.titles.en);
+                const title = this.pick(titleList);
+                const hasSummary = Math.random() > 0.3;
+                let summaryText = hasSummary ? `${this.pick(this.vocab.summaries.en)} - Edited ${title.replace(/_/g, ' ')}.` : null;
+
+                return {
+                    theme: 'wiki', is_sim: true, title: title, user: this.generateUser(),
+                    url: `https://${langData.server}/wiki/${title}`, timestamp: Math.floor(Date.now() / 1000),
+                    server_name: langData.server, lang: langData.code.toUpperCase(), summary: summaryText,
+                    raw: { page_id: Math.floor(Math.random() * 10000000), rev_id: Math.floor(Math.random() * 1000000000), parent_id: Math.floor(Math.random() * 1000000000), comment: hasSummary ? "Updated content" : "No edit summary", bot: Math.random() < 0.3 }
+                };
+            }
+        };
+
         function updateStatus(state) {
             const el = document.getElementById('status-indicator');
             el.className = "live-indicator"; el.style.opacity = "1"; el.style.color = "";
+            el.classList.remove('pulse');
+
             if (state === 'live') el.innerText = "● LIVE";
             else if (state === 'idle') { el.innerText = "● LOW BANDWIDTH"; el.style.opacity = "0.7"; el.style.color = "var(--text-color)"; }
             else if (state === 'refill') { el.innerText = "● RECEIVING TRANSMISSION"; el.classList.add('refill'); }
-            else if (state === 'sim') { el.innerText = "● OFFLINE (SIM)"; el.style.color = "#fa0"; }
+            else if (state === 'sim') {
+                el.innerText = "● DEAD RECKONING";
+                el.style.color = "#fa0";
+                el.classList.add('pulse');
+            }
         }
 
         function checkRefillNeeded() {
@@ -991,7 +1114,6 @@
 
             const store = stores[currentTheme];
 
-            // Move data from staging to event queue
             if (store.eventQueue.length < 3 && store.stagingQueue.length > 0) {
                 while (store.stagingQueue.length > 0) store.eventQueue.push(store.stagingQueue.shift());
             }
@@ -1006,10 +1128,8 @@
                 return;
             }
 
-            // Fetch threshold
             if (totalItems < 10) {
                 const now = Date.now();
-                // We poll every 5 seconds if low on data
                 if (now - store.lastFetch > 5000) {
                     fetchBatch(currentTheme);
                 }
@@ -1025,7 +1145,6 @@
             const store = stores[theme];
             store.lastFetch = Date.now();
 
-            // [FIX] Dynamic URL generation for Wikipedia Language Filter
             let url = ENDPOINTS[theme.toUpperCase()];
             if (theme === 'wiki' && isWikiEnglishOnly) {
                 url += "?lang=en";
@@ -1038,7 +1157,6 @@
                 if (!res.ok) throw new Error(`Worker Error: ${res.status}`);
 
                 const events = await res.json();
-
                 let addedCount = 0;
                 const batch = events.slice(-200);
 
@@ -1051,7 +1169,7 @@
                         item = {
                             theme: 'wiki', title: data.title, user: data.user,
                             url: data.url, time: data.timestamp, summary: data.summary,
-                            raw: data.raw, lang: data.lang
+                            raw: data.raw, lang: data.lang, server_name: data.server_name
                         };
                     } else if (theme === 'github') {
                         uniqueId = `gh-${data.id}`;
@@ -1064,15 +1182,10 @@
                         uniqueId = `btc-${data.id}`;
                         item = {
                             theme: 'btc', hash: data.hash, btc: data.btc,
-                            url: data.url, time: data.time, raw: data.raw,
-                            price_snapshot: data.price_snapshot
+                            url: data.url, time: data.time, raw: data.raw
                         };
-                        if (data.price_snapshot) btcPrice = data.price_snapshot;
                     }
 
-                    // Dedup Logic:
-                    // If the processedIds set is too large, we prune it to prevent memory leaks.
-                    // We check if the ID exists; if not, we add it to the queue.
                     if (!store.processedIds.has(uniqueId)) {
                         store.processedIds.add(uniqueId);
                         if (store.processedIds.size > 500) {
@@ -1084,31 +1197,19 @@
                     }
                 }
 
-                /**
-                 * [CRITICAL FIX: BACK-PRESSURE HANDLING]
-                 * Cloudflare Workers cache responses for 5 minutes. 
-                 * If we fetch again within that window, we get the exact same JSON.
-                 * Client-side dedup logic will discard all duplicates, resulting in addedCount === 0.
-                 * If we don't handle this, the queue runs dry and the screen freezes.
-                 * * Solution: If we fetch successfully but get 0 new items (stale cache),
-                 * we inject simulation data to keep the visual flow alive until the cache expires.
-                 */
                 if (addedCount === 0 && store.eventQueue.length === 0) {
-                    console.warn(`[${theme}] Stale cache (0 new items). Injecting simulation fallback.`);
                     for (let i = 0; i < 3; i++) {
                         const sim = generateSimData(theme);
                         if (sim) store.stagingQueue.push(sim);
                     }
                 }
 
-                // Immediate fill
                 if (store.eventQueue.length === 0) {
                     while (store.stagingQueue.length > 0) store.eventQueue.push(store.stagingQueue.shift());
                 }
 
             } catch (err) {
                 console.error(`Fetch failed for ${theme}:`, err);
-                // On network error, switch to sim mode temporarily
                 startSimulation(theme);
             } finally {
                 isRefilling = false;
@@ -1117,14 +1218,22 @@
         }
 
         function generateSimData(theme) {
-            const now = Math.floor(Date.now() / 1000);
-            if (theme === 'wiki') return { theme: 'wiki', is_sim: true, title: "Simulation_Theory_" + Math.floor(Math.random() * 1000), user: "Sim_User", time: now, summary: "Offline simulation active due to network cache.", lang: 'EN' };
-            else if (theme === 'btc') return { theme: 'btc', is_sim: true, hash: "simulated_hash_" + Math.random().toString(16).substr(2, 8), btc: (Math.random() * 2).toFixed(8), time: now, raw: { size: 245, relayed_by: "SimNode" }, price_snapshot: btcPrice };
-            else if (theme === 'github') return { theme: 'github', is_sim: true, repo: "simulation/offline-mode", type: "PushEvent", user: "Sim_Coder", time: now, raw: { payload: { commits: [{ message: "Offline commit" }] } } };
+            if (theme === 'wiki') {
+                if (typeof WikiLorem !== 'undefined') return WikiLorem.createEvent();
+                const now = Math.floor(Date.now() / 1000);
+                return { theme: 'wiki', is_sim: true, title: "Sim_Article_" + now, user: "Sim_User", timestamp: now, summary: "Fallback simulation data.", lang: 'EN' };
+            }
+            else if (theme === 'github') {
+                if (typeof GitHubLorem !== 'undefined') return GitHubLorem.generateEvent();
+            }
+            else if (theme === 'btc') {
+                if (typeof BTCLorem !== 'undefined') return BTCLorem.createEvent();
+            }
             return null;
         }
 
         function startSimulation(theme) {
+            updateStatus('sim');
             const store = stores[theme];
             const item = generateSimData(theme);
             if (item) store.eventQueue.push(item);
@@ -1146,12 +1255,10 @@
             } else if (item.theme === 'btc') {
                 const fee = item.raw ? item.raw.fee : 0;
                 const vsize = item.raw ? item.raw.vsize : 0;
-
                 html = `TX: ${makeLink(truncate(item.hash, 12), item.url)} ` +
                     `<span style="color:var(--text-color)">` +
                     `(${item.btc} BTC <span style="opacity:0.6; font-size:0.9em;">| ${vsize}vB</span>)` +
                     `</span>`;
-
             } else if (item.theme === 'github') {
                 html = `<span class="log-stat">[${item.type}]</span> ${item.user} @ ${makeLink(truncate(item.repo, 30), item.url)}`;
             }
@@ -1165,23 +1272,18 @@
 
         async function runDisplayLoop() {
             if (!displayLoopRunning) return;
-
-            // Trigger refill logic if needed
             if (isSplitMode && !isRefilling && currentTheme) checkRefillNeeded();
 
-            // Access the specific store for the current theme
             const store = currentTheme ? stores[currentTheme] : null;
 
             if (isSplitMode && store && store.eventQueue.length > 0) {
                 const item = store.eventQueue.shift();
                 renderTopList(item);
 
-                // --- DETAIL VIEW RENDERING ---
                 const detail = document.getElementById('detail-container');
                 detail.innerHTML = '';
 
-                if (item.theme === 'wiki') {
-                    // Text Streaming Effect for Wiki
+                if (item.theme === 'wiki' && item.summary) {
                     const header = document.createElement('div');
                     header.style.marginBottom = '15px';
                     header.innerHTML = `<span style="color:var(--accent-color);font-weight:bold;">TITLE: ${item.title}</span><br><span style="opacity:0.6;font-size:0.8em">${item.url}</span>`;
@@ -1190,25 +1292,21 @@
                     const textDiv = document.createElement('div'); textDiv.className = 'wiki-text';
                     detail.appendChild(textDiv);
 
-                    const words = (item.summary || "No summary available.").split(" ");
+                    const words = item.summary.split(" ");
                     for (const word of words) {
                         if (currentTheme !== 'wiki') break;
                         textDiv.textContent += word + " ";
-                        await new Promise(r => setTimeout(r, Math.random() * 30 + 50));
+                        await new Promise(r => setTimeout(r, Math.random() * 120 + 75));
                     }
-                    await new Promise(r => setTimeout(r, 2000));
+                    await new Promise(r => setTimeout(r, 2250));
 
                 } else {
-                    // JSON Code Rain Effect for GitHub/BTC
                     let displayObj = {};
                     if (item.theme === 'btc') {
                         displayObj = {
                             protocol: 'BITCOIN_MEMPOOL',
                             hash: item.hash,
-                            amount: {
-                                btc: item.btc,
-                                sats: item.raw ? item.raw.value_sats : 0
-                            },
+                            amount: { btc: item.btc, sats: item.raw ? item.raw.value_sats : 0 },
                             network_data: {
                                 fee_sats: item.raw ? item.raw.fee : 0,
                                 vsize: item.raw ? item.raw.vsize : 0,
@@ -1220,6 +1318,19 @@
                         displayObj = {
                             type: item.type, actor: item.user, repo: item.repo,
                             payload: item.raw.payload
+                        };
+                    } else if (item.theme === 'wiki') {
+                        displayObj = {
+                            meta_event: "WIKI_EDIT_LOG",
+                            server: item.server_name,
+                            page_title: item.title,
+                            user: item.user,
+                            revision: {
+                                new_id: item.raw ? item.raw.rev_id : 0,
+                                parent_id: item.raw ? item.raw.parent_id : 0,
+                                is_bot: item.raw ? item.raw.bot : false
+                            },
+                            timestamp: item.timestamp || item.time
                         };
                     }
 
@@ -1238,29 +1349,28 @@
                             if (token.endsWith(':')) span.className = 'json-key';
                             else if (token.startsWith('"')) span.className = 'json-string';
                             else if (/^\d+$/.test(token)) span.className = 'json-number';
-                            else span.className = 'json-bool';
-
+                            else if (/^(true|false|null)$/.test(token)) span.className = 'json-bool';
+                            else span.className = 'json-special';
                             lineEl.appendChild(span);
-                            detail.scrollTop = detail.scrollHeight;
-                            await new Promise(r => setTimeout(r, /^\s+$/.test(token) ? 5 : Math.random() * 20 + 10));
                         }
-                        await new Promise(r => setTimeout(r, 10));
+                        detail.scrollTop = detail.scrollHeight;
+                        await new Promise(r => setTimeout(r, 50));
                     }
-                    await new Promise(r => setTimeout(r, 1500));
+                    await new Promise(r => setTimeout(r, 1800));
                 }
             } else {
-                // Queue empty, wait a bit
                 await new Promise(r => setTimeout(r, 500));
             }
-
             requestAnimationFrame(() => runDisplayLoop());
         }
 
         // --- INIT ---
         function startCinematicBoot() {
-            // Fake the boot sequence without accessing stores yet
             isSplitMode = true; document.body.classList.add('mode-split');
-            currentTheme = 'boot'; // Placeholder
+            currentTheme = 'boot';
+            bootTimeouts.forEach(t => clearTimeout(t));
+            bootTimeouts = [];
+
             const bootLogs = [
                 "KERNEL: Initializing memory mapping...",
                 "NET: Connecting to 1970.one workers...",
@@ -1278,18 +1388,20 @@
             bootLogs.forEach((log) => {
                 const step = Math.floor(Math.random() * 600) + 400;
                 totalDelay += step;
-                setTimeout(() => {
+                let tId = setTimeout(() => {
                     const div = document.createElement('div'); div.className = 'log-item';
                     div.innerHTML = `<span class="log-time">BOOT</span><span style="color:var(--text-color)">${log}</span>`;
                     container.appendChild(div); container.scrollTop = container.scrollHeight;
                     SoundFX.play('click');
                 }, totalDelay);
+                bootTimeouts.push(tId);
             });
 
-            setTimeout(() => {
+            let closeId = setTimeout(() => {
                 closeSplitMode();
                 setTimeout(() => { container.innerHTML = ''; currentTheme = null; }, 600);
             }, totalDelay + 4000);
+            bootTimeouts.push(closeId);
         }
 
         startCinematicBoot();
@@ -1329,7 +1441,6 @@
             ping(); pingInterval = setInterval(ping, 2000);
         }
 
-        // Simple RTT visualizer
         function drawRttGraph() {
             const w = rttCanvas.width = rttGraphContainer.clientWidth;
             const h = rttCanvas.height = rttGraphContainer.clientHeight;
@@ -1345,7 +1456,6 @@
         }
         window.addEventListener('resize', () => { if (targetMode === 'remote') drawRttGraph(); });
 
-        // RTT Format Toggle
         function toggleUnixFormat() {
             if (unixFormat === 'dec') unixFormat = 'hex';
             else if (unixFormat === 'hex') unixFormat = 'bin';
