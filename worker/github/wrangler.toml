@@ -1,0 +1,10 @@
+name = "1970-github"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "STORE"
+id = "cbe9bad4a9ce443e84a02c0d2cc3101c"
+
+[triggers]
+crons = ["*/6 * * * *"]
