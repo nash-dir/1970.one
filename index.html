@@ -698,6 +698,7 @@
         let displayLoopRunning = false;
         let bootTimeouts = [];
         let isWikiEnglishOnly = false;
+        let renderSessionId = 0;
 
         function toggleWikiLang() {
             isWikiEnglishOnly = !isWikiEnglishOnly;
@@ -898,6 +899,7 @@
 
         function closeSplitMode() {
             isSplitMode = false; document.body.classList.remove('mode-split');
+            displayLoopRunning = false;
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             currentTheme = null;
             document.getElementById('wiki-lang-toggle').classList.remove('visible');
@@ -908,6 +910,7 @@
                 bootTimeouts.forEach(t => clearTimeout(t));
                 bootTimeouts = [];
             }
+            renderSessionId++;
 
             if (currentTheme === theme && isSplitMode) return;
             isSplitMode = true; document.body.classList.add('mode-split');
@@ -950,7 +953,9 @@
                 checkRefillNeeded();
             }
 
-            if (!displayLoopRunning) { displayLoopRunning = true; runDisplayLoop(); }
+            displayLoopRunning = true;
+            runDisplayLoop(renderSessionId);
+
         }
 
         /**
@@ -1270,8 +1275,9 @@
             SoundFX.play('click');
         }
 
-        async function runDisplayLoop() {
-            if (!displayLoopRunning) return;
+        async function runDisplayLoop(mySessionId) {
+            if (!displayLoopRunning || mySessionId !== renderSessionId) return;
+
             if (isSplitMode && !isRefilling && currentTheme) checkRefillNeeded();
 
             const store = currentTheme ? stores[currentTheme] : null;
@@ -1283,24 +1289,29 @@
                 const detail = document.getElementById('detail-container');
                 detail.innerHTML = '';
 
+                // --- Case A: Wikipedia (Typewriter Effect) ---
                 if (item.theme === 'wiki' && item.summary) {
                     const header = document.createElement('div');
                     header.style.marginBottom = '15px';
                     header.innerHTML = `<span style="color:var(--accent-color);font-weight:bold;">TITLE: ${item.title}</span><br><span style="opacity:0.6;font-size:0.8em">${item.url}</span>`;
                     detail.appendChild(header);
 
-                    const textDiv = document.createElement('div'); textDiv.className = 'wiki-text';
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'wiki-text';
                     detail.appendChild(textDiv);
 
                     const words = item.summary.split(" ");
                     for (const word of words) {
-                        if (currentTheme !== 'wiki') break;
+                        if (mySessionId !== renderSessionId) return;
+
                         textDiv.textContent += word + " ";
                         await new Promise(r => setTimeout(r, Math.random() * 120 + 75));
                     }
                     await new Promise(r => setTimeout(r, 2250));
 
-                } else {
+                }
+                // --- Case B: JSON Data Stream (BTC / GitHub / Wiki Raw) ---
+                else {
                     let displayObj = {};
                     if (item.theme === 'btc') {
                         displayObj = {
@@ -1338,30 +1349,39 @@
                     const lines = jsonStr.split('\n');
 
                     for (const line of lines) {
-                        if (currentTheme !== item.theme) break;
+                        if (mySessionId !== renderSessionId) return;
+
                         const lineEl = document.createElement('div');
                         lineEl.className = 'cli-line';
                         detail.appendChild(lineEl);
 
+                        // JSON Syntax Highlighting
                         const tokens = line.match(/("(?:\\.|[^\\"])*"(?::)?|\b\d+\b|\b(true|false|null)\b|[\[\]{},:]|\s+)/g) || [line];
                         for (const token of tokens) {
-                            const span = document.createElement('span'); span.textContent = token;
+                            const span = document.createElement('span');
+                            span.textContent = token;
+
                             if (token.endsWith(':')) span.className = 'json-key';
                             else if (token.startsWith('"')) span.className = 'json-string';
                             else if (/^\d+$/.test(token)) span.className = 'json-number';
                             else if (/^(true|false|null)$/.test(token)) span.className = 'json-bool';
                             else span.className = 'json-special';
+
                             lineEl.appendChild(span);
                         }
+
                         detail.scrollTop = detail.scrollHeight;
+
                         await new Promise(r => setTimeout(r, 50));
                     }
                     await new Promise(r => setTimeout(r, 1800));
                 }
             } else {
                 await new Promise(r => setTimeout(r, 500));
+                if (mySessionId !== renderSessionId) return;
             }
-            requestAnimationFrame(() => runDisplayLoop());
+
+            requestAnimationFrame(() => runDisplayLoop(mySessionId));
         }
 
         // --- INIT ---
