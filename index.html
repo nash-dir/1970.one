@@ -1404,8 +1404,6 @@
             bootTimeouts.push(closeId);
         }
 
-        startCinematicBoot();
-
         // Target Input Logic (for RTT Graph)
         const targetInput = document.getElementById('target-input');
         const resetBtn = document.getElementById('reset-btn');
@@ -1463,6 +1461,52 @@
             document.getElementById('unix-fmt-btn').innerText = `[${unixFormat.toUpperCase()}]`;
             SoundFX.play('blip'); updateTime();
         }
+
+        // --- URL PARAMETER INIT ---
+        function initFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const themeParam = params.get('theme');
+            const targetParam = params.get('target');
+            let bootSkipped = false;
+
+            // 1. Handle Target parameter (Dependency: startRemoteMode, targetInput)
+            if (targetParam) {
+                const cleanTarget = targetParam.trim();
+
+                // Logic sync with event listener: check valid string & ignore localhost
+                if (cleanTarget && cleanTarget.toLowerCase() !== 'localhost') {
+                    // Use the global variables defined above
+                    if (targetInput) targetInput.value = cleanTarget;
+
+                    if (typeof startRemoteMode === 'function') {
+                        startRemoteMode(cleanTarget);
+
+                        // Force initial render (wait for DOM/Style updates)
+                        requestAnimationFrame(() => {
+                            if (typeof drawRttGraph === 'function') drawRttGraph();
+                        });
+                    }
+                }
+            }
+
+            // 2. Handle Theme parameter
+            if (themeParam) {
+                const validThemes = ['wiki', 'btc', 'github'];
+                if (validThemes.includes(themeParam)) {
+                    toggleMode(themeParam);
+                    bootSkipped = true;
+                }
+            }
+
+            // 3. Run boot sequence ONLY if no valid parameters intercepted
+            if (!bootSkipped) {
+                // startCinematicBoot is defined way above, so it's safe to call here.
+                startCinematicBoot();
+            }
+        }
+
+        // Execute initialization strictly after all const/functions are loaded
+        initFromURL();
 
     </script>
 </body>
