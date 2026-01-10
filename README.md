@@ -49,6 +49,25 @@ The data engine runs on **Cloudflare Workers** with **KV Storage**, engineered t
 
 ---
 
+## URL Query Parameters (Deep Linking)
+
+1970.one supports **Deep Linking** via URL query parameters. This feature allows you to bypass the cinematic boot sequence and initialize the dashboard in a specific state, which is ideal for **Kiosk Mode**, multi-monitor setups, or bookmarking specific configurations.
+
+| Parameter | Description | Values |
+| :--- | :--- | :--- |
+| `theme` | Skips boot animation and immediately loads the specified theme. | `wiki`, `btc`, `github` |
+| `target` | Sets the RTT monitor target domain and starts pinging immediately. | Any domain (e.g., `google.com`) |
+
+### Usage Examples
+* **Bitcoin Dashboard (Immediate Start):**
+    `https://1970.one/?theme=btc`
+* **Network Monitor (Targeting Google):**
+    `https://1970.one/?target=google.com`
+* **Combined (Wiki Theme + Cloudflare Monitor):**
+    `https://1970.one/?theme=wiki&target=cloudflare.com`
+
+---
+
 ## Project Structure
 
 ```bash
